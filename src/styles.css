@@ -88,15 +88,118 @@ body::before {
   width: 1131.02px;
   height: 126.51px;
   filter: drop-shadow(0 20px 40px rgba(30, 25, 15, .35));
+  font-family: 'NHGDP', 'Helvetica Neue', Arial, sans-serif;
 }
-.panel-bg {
+
+/* ---- Static chrome shell: brushed-metal texture, clipped + bordered ---- */
+.panel-shell {
   position: absolute;
   inset: 0;
+  border-radius: 28.35px;
+  overflow: hidden;
+  border: 1.5px solid #A7A9AC;
+  box-sizing: border-box;
+  background: #ccc;
+}
+.panel-texture {
+  position: absolute;
+  left: -1.5%;
+  top: -7.94%;
+  width: 103.1%;
+  height: 185.58%;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ---- Static decorative pieces + icon buttons (always visible — pad-printed
+   hardware, per the design: black/chrome elements never go dark, only the
+   backlit white/orange text and indicators do) ---- */
+.tc-static {
+  position: absolute;
+  display: block;
   width: 100%;
   height: 100%;
-  display: block;
   user-select: none;
   pointer-events: none;
+  transition: opacity .15s;
+}
+.tc-hit { pointer-events: auto; cursor: pointer; }
+.tc-disabled { opacity: .4; pointer-events: none; }
+
+.tc-caption {
+  position: absolute;
+  font-size: 9px;
+  line-height: 1.15;
+  color: #1a1a1a;
+  text-align: center;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.tc-caption-2l { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
+.tc-caption-2l i { display: block; width: 100%; height: 1px; background: #1a1a1a; opacity: .5; font-style: normal; }
+
+.tc-opt-word {
+  position: absolute;
+  font-size: 9px;
+  line-height: 1.1;
+  text-align: center;
+  pointer-events: none;
+  transition: opacity .15s;
+  white-space: nowrap;
+}
+
+/* ---- Backlit elements: invisible when the machine is off ---- */
+.tc-glow {
+  position: absolute;
+  pointer-events: none;
+  transition: opacity .15s;
+}
+.tc-word {
+  font-size: 9px;
+  color: var(--org);
+  text-align: center;
+  white-space: nowrap;
+}
+.tc-doneness-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: var(--org);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  border-radius: 3px;
+}
+.tc-orange-caption { font-size: 9px; color: var(--org); white-space: nowrap; }
+.tc-white-caption { font-size: 9px; color: #fff; white-space: nowrap; }
+
+.tc-disp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DSEG7', 'JetBrains Mono', monospace;
+  font-weight: 700;
+  letter-spacing: 2px;
+  font-size: 26px;
+  color: #fff;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, .3));
+  white-space: pre;
+}
+
+.tc-blink { animation: tcBlink 1s step-end infinite; }
+@keyframes tcBlink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: .15; } }
+
+.tc-readout {
+  margin-top: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .5px;
+  text-align: center;
+  color: var(--mut);
 }
 
 /* ================================================
