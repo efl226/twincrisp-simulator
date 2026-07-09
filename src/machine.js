@@ -33,6 +33,18 @@ export const DEFAULT_TIME = { // seconds, MM:SS
   Nuggets: 720, Wings: 1500, Cookies: 720,
 }
 
+// Suggested rack position (1 = top, 4 = bottom) per option — placeholder
+// guesses, to be replaced with real guidance. Shown live on the Rack Level
+// indicator as soon as an option is highlighted, same as temp/time defaults.
+export const RACK_LEVEL = {
+  // probe
+  Beef: 2, Poultry: 2, Fish: 1, Pork: 2, Lamb: 2, Manual: 2,
+  // function
+  'Air Fry': 2, Bagel: 3, Toast: 4, Bake: 2, Broil: 4, 'Slow Cook': 1, Warm: 1, Dehydrate: 3,
+  // presets
+  Pizza: 2, Fries: 3, Veggies: 3, Snacks: 3, Nuggets: 3, Wings: 2, Cookies: 2,
+}
+
 export const TEMP_STEP = 5, TEMP_MIN = 150, TEMP_MAX = 450
 export const TIME_STEP = 30, TIME_MIN = 30, TIME_MAX = 99 * 60 + 59
 export const SLICES_MIN = 1, SLICES_MAX = 4, DEFAULT_SLICES = 2

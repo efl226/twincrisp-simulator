@@ -187,8 +187,8 @@ body::before {
   justify-content: center;
   font-family: 'DSEG7', 'JetBrains Mono', monospace;
   font-weight: 700;
-  letter-spacing: 2px;
-  font-size: 26px;
+  letter-spacing: 1px;
+  font-size: 34px;
   color: #fff;
   filter: drop-shadow(0 0 8px rgba(255, 255, 255, .3));
   white-space: pre;

@@ -1,6 +1,6 @@
 import { useRef } from 'react'
-import { CATEGORIES, DONENESS, currentOption, isToast, fmtTime } from '../machine.js'
-import { ProbeButtonSvg, FunctionButtonSvg, PresetButtonSvg } from './ButtonSvgs.jsx'
+import { CATEGORIES, DONENESS, RACK_LEVEL, currentOption, isToast, fmtTime } from '../machine.js'
+import { ProbeButtonSvg, FunctionButtonSvg, PresetButtonSvg, RackLevelSvg } from './ButtonSvgs.jsx'
 
 import panelTexture from '../assets/panel/panel-texture.png'
 import smartProbeImg from '../assets/panel/smart-probe.svg'
@@ -10,7 +10,6 @@ import timeIcon from '../assets/panel/time-icon.svg'
 import startStopIcon from '../assets/panel/startstop-icon.svg'
 import functionPresetPill from '../assets/panel/function-preset-pill.svg'
 import dialImg from '../assets/panel/dial.svg'
-import rackLevelImg from '../assets/panel/rack-level.svg'
 import dualLevelIcon from '../assets/panel/dual-level-icon.svg'
 import lightIcon from '../assets/panel/light-icon.svg'
 
@@ -128,6 +127,8 @@ export default function Panel({ S, C, send }) {
   const idle = S === 'idle'
   const opt = currentOption(C)
   const toast = isToast(C)
+  const probeMode = C.mode === 'probe'
+  const rackLevel = opt ? RACK_LEVEL[opt] : null
 
   const indicatorColor = (cat) => (on && C.mode === cat) ? ORANGE : GRAY_IND
   const indicatorBlink = (cat) => on && C.mode === cat && C.focus === 'mode'
@@ -157,7 +158,9 @@ export default function Panel({ S, C, send }) {
         </div>
 
         <img className="tc-static" style={box(...SMART_PROBE_BOX)} src={smartProbeImg} alt="" draggable={false} />
-        <img className="tc-static" style={{ ...box(...RACK_LEVEL_LED), opacity: on ? 1 : 0 }} src={rackLevelImg} alt="" draggable={false} />
+        <div style={box(...RACK_LEVEL_LED)}>
+          <RackLevelSvg activeLevel={rackLevel} on={on} />
+        </div>
         <span className="tc-caption" style={box(...RACK_LEVEL_CAPTION)}>Rack<br />Level</span>
         <img className="tc-static" style={box(...DUAL_LEVEL_ICON)} src={dualLevelIcon} alt="" draggable={false} />
         <span className="tc-caption" style={box(...DUAL_LEVEL_CAPTION)}>Dual<br />Level</span>
@@ -213,14 +216,14 @@ export default function Panel({ S, C, send }) {
         <img className="tc-static tc-hit" style={box(...LIGHT_ICON)} src={lightIcon} alt="" draggable={false} onClick={() => send('LIGHT_TOGGLE')} />
         <span className="tc-caption" style={box(...LIGHT_CAPTION)}>Light</span>
 
-        {/* ---- doneness readout (backlit) ---- */}
+        {/* ---- doneness readout (backlit, probe only) ---- */}
         {DONENESS_WORDS.map(({ word, b }, i) => (
-          <span key={word} className="tc-glow tc-word" style={{ ...box(...b), opacity: on ? (C.mode === 'probe' && C.doneness === i ? 1 : 0.5) : 0 }}>{word}</span>
+          <span key={word} className="tc-glow tc-word" style={{ ...box(...b), opacity: on && probeMode ? (C.doneness === i ? 1 : 0.5) : 0 }}>{word}</span>
         ))}
-        <span className="tc-glow tc-white-caption" style={{ ...box(...CAPTION_SLICES), opacity: on ? 1 : 0 }}>Slices</span>
-        <span className="tc-glow tc-white-caption" style={{ ...box(...CAPTION_TARGET_TEMP), opacity: on ? 1 : 0 }}>Target Temp</span>
-        <span className="tc-glow tc-white-caption" style={{ ...box(...CAPTION_CURRENT_TEMP), opacity: on ? 1 : 0 }}>Current Temp</span>
-        <span className="tc-glow tc-white-caption" style={{ ...box(...CAPTION_SHADE), opacity: on ? 1 : 0 }}>Shade</span>
+        <span className="tc-glow tc-white-caption" style={{ ...box(...CAPTION_SLICES), opacity: on && toast ? 1 : 0 }}>Slices</span>
+        <span className="tc-glow tc-white-caption" style={{ ...box(...CAPTION_TARGET_TEMP), opacity: on && probeMode ? 1 : 0 }}>Target Temp</span>
+        <span className="tc-glow tc-white-caption" style={{ ...box(...CAPTION_CURRENT_TEMP), opacity: on && probeMode ? 1 : 0 }}>Current Temp</span>
+        <span className="tc-glow tc-white-caption" style={{ ...box(...CAPTION_SHADE), opacity: on && toast ? 1 : 0 }}>Shade</span>
 
         {/* ---- digit displays (backlit) ---- */}
         <div className={'tc-glow tc-disp' + blinkField('value1')} style={{ ...box(...DISPLAY3), opacity: on && C.mode ? 1 : 0 }}>{disp3}</div>
