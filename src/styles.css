@@ -6,7 +6,7 @@
 }
 @font-face {
   font-family: 'NHGDP';
-  src: url('./assets/Fonts/NeueHaasDisplayMedium.ttf') format('truetype');
+  src: url('./assets/Fonts/NeueHaasDisplayMediu.ttf') format('truetype');
   font-weight: 500;
   font-display: swap;
 }
@@ -148,6 +148,7 @@ body::before {
 .tc-caption {
   position: absolute;
   font-size: 9px;
+  font-weight: 400;
   line-height: 1.15;
   color: #1a1a1a;
   text-align: center;
@@ -160,6 +161,7 @@ body::before {
 .tc-opt-word {
   position: absolute;
   font-size: 9px;
+  font-weight: 500;
   line-height: 1.1;
   text-align: center;
   pointer-events: none;
@@ -175,11 +177,12 @@ body::before {
 }
 .tc-word {
   font-size: 9px;
+  font-weight: 500;
   color: var(--org);
   text-align: center;
   white-space: nowrap;
 }
-.tc-white-caption { font-size: 9px; color: #fff; white-space: nowrap; }
+.tc-white-caption { font-size: 9px; font-weight: 500; color: #fff; white-space: nowrap; }
 
 .tc-disp {
   display: flex;
