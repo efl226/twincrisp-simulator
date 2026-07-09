@@ -156,7 +156,7 @@ body::before {
   white-space: nowrap;
 }
 .tc-caption-2l { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
-.tc-caption-2l i { display: block; width: 100%; height: 1px; background: #1a1a1a; opacity: .5; font-style: normal; }
+.tc-caption-2l i { display: block; flex-shrink: 0; width: 100%; height: 1px; background: #1a1a1a; opacity: .5; font-style: normal; }
 
 .tc-opt-word {
   position: absolute;

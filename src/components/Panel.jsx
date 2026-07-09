@@ -59,6 +59,7 @@ const PRESET_WORDS = [
   { word: 'Cookies', b: [278.32, 89.82, 43, 11] },
 ]
 
+const RACK_LEVEL_DUAL_LABEL = [385.32, 26, 33, 11]
 const RACK_LEVEL_LED = [385.32, 38.19, 33, 51.26]
 const RACK_LEVEL_CAPTION = [385.32, 95.32, 33, 22]
 
@@ -167,6 +168,7 @@ export default function Panel({ S, C, send }) {
         </div>
 
         <img className="tc-static" style={box(...SMART_PROBE_BOX)} src={smartProbeImg} alt="" draggable={false} />
+        <span className="tc-glow tc-word" style={{ ...box(...RACK_LEVEL_DUAL_LABEL), opacity: on ? 1 : 0 }}>Dual</span>
         <div style={box(...RACK_LEVEL_LED)}>
           <RackLevelSvg activeLevel={rackLevel} on={on} />
         </div>
