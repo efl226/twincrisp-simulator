@@ -105,11 +105,11 @@ const LIGHT_CAPTION = [994.82, 93, 37, 11]
 const START_STOP_BOX = [1045.56, 42.24, 42.52, 42.52]
 const START_STOP_CAPTION = [1043.82, 93, 46, 11]
 
-function OptionWord({ word, b, active, color, on }) {
+function OptionWord({ word, b, active, shown, color, on }) {
   return (
     <span
       className="tc-opt-word"
-      style={{ ...box(...b), color, opacity: on ? (active ? 1 : 0.5) : 0 }}
+      style={{ ...box(...b), color, opacity: on && shown ? (active ? 1 : 0.5) : 0 }}
     >
       {word}
     </span>
@@ -137,7 +137,8 @@ export default function Panel({ S, C, send }) {
   const probeMode = C.mode === 'probe'
   const rackLevel = opt ? RACK_LEVEL[opt] : null
 
-  const indicatorColor = (cat) => (on && C.mode === cat) ? ORANGE : GRAY_IND
+  // Orange indicator is Probe-only; Function/Presets flash white.
+  const indicatorColor = (cat) => (on && C.mode === cat) ? (cat === 'probe' ? ORANGE : '#fff') : GRAY_IND
   const indicatorBlink = (cat) => on && C.mode === cat && C.focus === 'mode'
 
   let value1Label = 'Temp'
@@ -184,7 +185,7 @@ export default function Panel({ S, C, send }) {
         {/* ---- probe ---- */}
         {PROBE_WORDS.map(({ word, b }, i) => (
           <OptionWord key={word} word={word} b={b} on={on} color={ORANGE}
-            active={C.mode === 'probe' && C.optionIndex === i} />
+            shown={probeMode} active={C.optionIndex === i} />
         ))}
         <div className="tc-hit" style={box(...PROBE_BUTTON)} onClick={() => idle && send('PRESS_CATEGORY', 'probe')}>
           <ProbeButtonSvg indicatorColor={indicatorColor('probe')} blink={indicatorBlink('probe')} />
@@ -193,11 +194,11 @@ export default function Panel({ S, C, send }) {
         {/* ---- function / presets ---- */}
         {FUNCTION_WORDS.map(({ word, b }, i) => (
           <OptionWord key={word} word={word} b={b} on={on} color="#fff"
-            active={C.mode === 'function' && C.optionIndex === i} />
+            shown={C.mode === 'function'} active={C.optionIndex === i} />
         ))}
         {PRESET_WORDS.map(({ word, b }, i) => (
           <OptionWord key={word} word={word} b={b} on={on} color="#fff"
-            active={C.mode === 'preset' && C.optionIndex === i} />
+            shown={C.mode === 'preset'} active={C.optionIndex === i} />
         ))}
         <img className="tc-static" style={box(...FUNCTION_PRESET_PILL)} src={functionPresetPill} alt="" draggable={false} />
         <div className="tc-hit" style={box(...FUNCTION_BUTTON)} onClick={() => idle && send('PRESS_CATEGORY', 'function')}>
