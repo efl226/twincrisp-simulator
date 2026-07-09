@@ -242,14 +242,15 @@ export default function Panel({ S, C, send }) {
         <div className={'tc-glow tc-disp' + (C.mode !== 'probe' ? blinkField('value2') : '')} style={{ ...box(...DISPLAY4), opacity: on && C.mode ? 1 : 0 }}>{disp4}</div>
       </div>
 
-      {/* ---- live readout — trustworthy summary while the on-panel wiring settles ---- */}
-      {on && (
-        <div className="tc-readout">
-          {C.mode ? `${CATEGORIES[C.mode].label.toUpperCase()} → ${opt}${C.focus === 'mode' ? ' (selecting…)' : ''}` : 'Choose Probe / Function / Presets'}
-          {C.mode && C.modeConfirmed && `  ·  ${value1Label}${C.focus === 'value1' ? ' (adjusting…)' : ''}`}
-          {C.mode && C.mode !== 'probe' && C.modeConfirmed && `  ·  Time/Shade${C.focus === 'value2' ? ' (adjusting…)' : ''}`}
-        </div>
-      )}
+      {/* ---- live readout — trustworthy summary while the on-panel wiring settles.
+           Always rendered (content just goes blank when off) so the layout
+           below it doesn't jump when the machine powers on/off. ---- */}
+      <div className="tc-readout">
+        {on && (C.mode ? `${CATEGORIES[C.mode].label.toUpperCase()} → ${opt}${C.focus === 'mode' ? ' (selecting…)' : ''}` : 'Choose Probe / Function / Presets')}
+        {on && C.mode && C.modeConfirmed && `  ·  ${value1Label}${C.focus === 'value1' ? ' (adjusting…)' : ''}`}
+        {on && C.mode && C.mode !== 'probe' && C.modeConfirmed && `  ·  Time/Shade${C.focus === 'value2' ? ' (adjusting…)' : ''}`}
+        {!on && ' '}
+      </div>
     </div>
   )
 }
