@@ -228,8 +228,9 @@ export default function Panel({ S, C, send }) {
         <span className="tc-caption" style={box(...LIGHT_CAPTION)}>Light</span>
 
         {/* ---- doneness readout (backlit, probe only) ---- */}
+        {/* while cooking, only the chosen level stays lit — the rest fully disappear instead of just dimming */}
         {DONENESS_WORDS.map(({ word, b }, i) => (
-          <span key={word} className="tc-glow tc-word" style={{ ...box(...b), opacity: on && probeMode ? (C.doneness === i ? 1 : 0.5) : 0 }}>{word}</span>
+          <span key={word} className="tc-glow tc-word" style={{ ...box(...b), opacity: on && probeMode ? (C.doneness === i ? 1 : (S === 'running' ? 0 : 0.5)) : 0 }}>{word}</span>
         ))}
         <span className="tc-glow tc-white-caption" style={{ ...box(...CAPTION_SLICES), opacity: on && toast ? 1 : 0 }}>Slices</span>
         <span className="tc-glow tc-white-caption" style={{ ...box(...CAPTION_TARGET_TEMP), opacity: on && probeMode ? 1 : 0 }}>Target Temp</span>
