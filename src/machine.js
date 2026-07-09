@@ -3,21 +3,21 @@
 // simulator: transition(state, context, event, arg) -> { S, C, msg }.
 
 export const CATEGORIES = {
-  probe:    { label: 'Probe',    options: ['Beef', 'Poultry', 'Fish', 'Pork', 'Lamb'] },
+  probe:    { label: 'Probe',    options: ['Beef', 'Poultry', 'Fish', 'Pork', 'Lamb', 'Manual'] },
   function: { label: 'Function', options: ['Air Fry', 'Bagel', 'Toast', 'Bake', 'Broil', 'Slow Cook', 'Warm', 'Dehydrate'] },
   preset:   { label: 'Presets',  options: ['Pizza', 'Fries', 'Veggies', 'Snacks', 'Nuggets', 'Wings', 'Cookies'] },
 }
 
-// Doneness is printed on the panel as three words — Medium / Rare / Well —
-// combined via opacity to spell five levels (e.g. "Medium"+"Rare" lit = Medium Rare).
+// Doneness is printed on the panel as five distinct labels (own text each,
+// not composited from shared words like the earlier layout).
 export const DONENESS = [
-  { name: 'Rare',        temp: 125, words: { medium: false, rare: true,  well: false } },
-  { name: 'Medium Rare', temp: 135, words: { medium: true,  rare: true,  well: false } },
-  { name: 'Medium',      temp: 145, words: { medium: true,  rare: false, well: false } },
-  { name: 'Medium Well', temp: 150, words: { medium: true,  rare: false, well: true } },
-  { name: 'Well',        temp: 160, words: { medium: false, rare: false, well: true } },
+  { name: 'Rare', temp: 125 },
+  { name: 'Med-Rare', temp: 135 },
+  { name: 'Med', temp: 145 },
+  { name: 'Med-Well', temp: 150 },
+  { name: 'Well', temp: 160 },
 ]
-export const DEFAULT_DONENESS = 1 // Medium Rare
+export const DEFAULT_DONENESS = 1 // Med-Rare
 
 // Placeholder defaults — sensible guesses, to be replaced with real specs.
 export const DEFAULT_TEMP = {

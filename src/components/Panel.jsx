@@ -3,95 +3,97 @@ import { CATEGORIES, DONENESS, currentOption, isToast, fmtTime } from '../machin
 import { ProbeButtonSvg, FunctionButtonSvg, PresetButtonSvg } from './ButtonSvgs.jsx'
 
 import panelTexture from '../assets/panel/panel-texture.png'
-import smartProbeImg from '../assets/panel/smart-probe.png'
+import smartProbeImg from '../assets/panel/smart-probe.svg'
 import powerIcon from '../assets/panel/power-icon.svg'
 import tempIcon from '../assets/panel/temp-icon.svg'
 import timeIcon from '../assets/panel/time-icon.svg'
 import startStopIcon from '../assets/panel/startstop-icon.svg'
 import functionPresetPill from '../assets/panel/function-preset-pill.svg'
-import dialImg from '../assets/panel/dial.png'
-import rackLevelImg from '../assets/panel/rack-level.png'
-import dualLevelImg from '../assets/panel/dual-level.png'
-import lightImg from '../assets/panel/light.png'
+import dialImg from '../assets/panel/dial.svg'
+import rackLevelImg from '../assets/panel/rack-level.svg'
+import dualLevelIcon from '../assets/panel/dual-level-icon.svg'
+import lightIcon from '../assets/panel/light-icon.svg'
 
 // All coordinates below are px, absolute within the panel's fixed
-// 1131.02 x 126.51 canvas — pulled directly from the cleaned-up Figma file
-// (frames: PROBE, FUNCTION PRESET, TEMP SECTION, CENTER FRAME, TIME SECTION,
-// etc., all already local to that canvas).
+// 1131.02 x 126.51 canvas — pulled directly from the current Figma layout
+// (FIGMA VERSION > UI CONTENTS tree). Re-derive from Figma metadata if the
+// layout moves again rather than eyeballing.
 const box = (left, top, width, height) => ({ position: 'absolute', left, top, width, height })
 
 const ORANGE = '#F26522'
 const GRAY_IND = '#9E9D9E'
 
-const PROBE_HIT = [103, 28, 82, 74]
-const PROBE_BUTTON = [104.79, 47.49, 78.41, 34.02]
+const POWER_ICON_BOX = [41.56, 42.56, 42.52, 42.52]
+const POWER_CAPTION = [50.32, 89.82, 25, 11]
+
+const PROBE_BUTTON = [106.3, 47, 78.41, 34.02]
 const PROBE_WORDS = [
-  { word: 'Beef', b: [103, 28, 19, 11] },
-  { word: 'Poultry', b: [130, 28, 29, 11] },
-  { word: 'Fish', b: [167, 28, 17, 11] },
-  { word: 'Pork', b: [115.5, 90, 19, 11] },
-  { word: 'Lamb', b: [149.5, 91, 23, 11] },
+  { word: 'Beef', b: [101, 27, 19, 11] },
+  { word: 'Poultry', b: [128, 27, 29, 11] },
+  { word: 'Fish', b: [165, 27, 17, 11] },
+  { word: 'Pork', b: [101, 90, 19, 11] },
+  { word: 'Lamb', b: [126, 90, 29, 11] },
+  { word: 'Manual', b: [161, 90, 29, 11] },
 ]
 
-const FUNCTION_PRESET_HIT_TOP = [194, 15, 175, 24]
-const FUNCTION_PRESET_HIT_BOTTOM = [194, 91, 175, 24]
-const FUNCTION_HIT = [199.545, 47.99, 81.95, 34.02]
-const PRESET_HIT = [281.5, 47.99, 81.95, 34.02]
-const FUNCTION_PRESET_PILL = [199.545, 47.99, 163.91, 34.02]
-const FUNCTION_BUTTON = [224.645, 59.86, 33.89, 14.06]
-const PRESET_BUTTON = [306.645, 59.87, 30.08, 14.05]
+const FUNCTION_PRESET_PILL = [195.87, 46.81, 163.91, 34.02]
+const FUNCTION_BUTTON = [220.97, 58.68, 33.89, 14.06]
+const PRESET_BUTTON = [302.97, 58.69, 30.08, 14.05]
 
 const FUNCTION_WORDS = [
-  { word: 'Air Fry', b: [194, 15, 43, 11] },
-  { word: 'Bagel', b: [238, 15, 43, 11] },
-  { word: 'Toast', b: [282, 15, 43, 11] },
-  { word: 'Bake', b: [326, 15, 43, 11] },
-  { word: 'Broil', b: [194, 104, 43, 11] },
-  { word: 'Slow Cook', b: [238, 104, 43, 11] },
-  { word: 'Warm', b: [282, 104, 43, 11] },
-  { word: 'Dehydrate', b: [326, 104, 43, 11] },
+  { word: 'Air Fry', b: [190.32, 13.82, 43, 11] },
+  { word: 'Bagel', b: [234.32, 13.82, 43, 11] },
+  { word: 'Toast', b: [278.32, 13.82, 43, 11] },
+  { word: 'Bake', b: [322.32, 13.82, 43, 11] },
+  { word: 'Broil', b: [190.32, 102.82, 43, 11] },
+  { word: 'Slow Cook', b: [234.32, 102.82, 43, 11] },
+  { word: 'Warm', b: [278.32, 102.82, 43, 11] },
+  { word: 'Dehydrate', b: [322.32, 102.82, 43, 11] },
 ]
 const PRESET_WORDS = [
-  { word: 'Pizza', b: [194, 28, 43, 11] },
-  { word: 'Fries', b: [238, 28, 43, 11] },
-  { word: 'Veggies', b: [282, 28, 43, 11] },
-  { word: 'Snacks', b: [326, 28, 43, 11] },
-  { word: 'Nuggets', b: [194, 91, 43, 11] },
-  { word: 'Wings', b: [238, 91, 43, 11] },
-  { word: 'Cookies', b: [282, 91, 43, 11] },
+  { word: 'Pizza', b: [190.32, 26.82, 43, 11] },
+  { word: 'Fries', b: [234.32, 26.82, 43, 11] },
+  { word: 'Veggies', b: [278.32, 26.82, 43, 11] },
+  { word: 'Snacks', b: [322.32, 26.82, 43, 11] },
+  { word: 'Nuggets', b: [190.32, 89.82, 43, 11] },
+  { word: 'Wings', b: [234.32, 89.82, 43, 11] },
+  { word: 'Cookies', b: [278.32, 89.82, 43, 11] },
 ]
 
-const TEMP_ICON_BOX = [385.74, 42.49, 42.52, 42.52]
-const TEMP_LABEL_STATIC = [386, 28, 42, 7]
-const TEMP_CAPTION = [393.86, 92.5, 26.28, 22.5]
+const RACK_LEVEL_LED = [385.32, 38.19, 33, 51.26]
+const RACK_LEVEL_CAPTION = [385.32, 95.32, 33, 22]
 
-const TIME_ICON_BOX = [703.74, 42, 42.52, 42.52]
-const TIME_CAPTION = [711.86, 92.5, 26.28, 22.5]
+const DUAL_LEVEL_ICON = [441.59, 50.09, 31.18, 31.18]
+const DUAL_LEVEL_CAPTION = [438.68, 95.68, 37, 22]
 
-const DONENESS_PILL = [451, 25.53, 45.19, 11.07]
-const DONENESS_WORD = {
-  medium: [499.86, 26, 32, 11],
-  rare: [532.86, 26, 19, 11],
-  well: [552.86, 26, 17, 11],
-}
-const DUAL_LEVEL_TEXT = [637.86, 26, 41, 11]
-const DISPLAY3 = [452, 42, 90, 33]
-const DISPLAY4 = [568, 42, 125, 33]
-const CAPTION_SLICES = [451, 89, 24, 11]
-const CAPTION_TARGET_TEMP = [480, 89, 49, 11]
-const CAPTION_CURRENT_TEMP = [595, 89, 54, 11]
-const CAPTION_SHADE = [654, 89, 26, 11]
+const TEMP_ICON_BOX = [495.42, 44.42, 42.52, 42.52]
+const TEMP_LABEL_STATIC = [495.68, 13.68, 42, 22.5]
+const TEMP_CAPTION = [503.54, 95.18, 26.28, 22.5]
 
-const POWER_ICON_BOX = [41.32, 41.63, 42.52, 42.52]
-const POWER_CAPTION = [50.08, 91.08, 25, 11]
-const START_STOP_BOX = [1045.74, 42, 42.52, 42.52]
-const START_STOP_CAPTION = [1044, 94, 46, 11]
+const DONENESS_WORDS = [
+  { word: 'Rare', b: [557.68, 8.68, 19, 11] },
+  { word: 'Med-Rare', b: [581.68, 8.68, 39, 11] },
+  { word: 'Med', b: [625.68, 8.68, 18, 11] },
+  { word: 'Med-Well', b: [557.68, 21.68, 37, 11] },
+  { word: 'Well', b: [599.68, 21.68, 17, 11] },
+]
+const DISPLAY3 = [555, 40, 88, 35]
+const DISPLAY4 = [685, 40, 112, 35]
+const CAPTION_SLICES = [557.68, 82.68, 24, 11]
+const CAPTION_TARGET_TEMP = [586.68, 82.68, 49, 11]
+const CAPTION_CURRENT_TEMP = [691.68, 82.68, 54, 11]
+const CAPTION_SHADE = [750.68, 82.68, 26, 11]
 
-const DIAL_BOX = [869.82, 13.32, 100.82, 100.82]
+const TIME_ICON_BOX = [800.74, 42.24, 42.52, 42.52]
+const TIME_CAPTION = [808.86, 91, 26.28, 22.5]
+
+const DIAL_BOX = [831, 12.09, 108, 108]
 const SMART_PROBE_BOX = [54.08, 10.59, 124.24, 18.37]
-const RACK_LEVEL_BOX = [764, 35, 33, 80]
-const DUAL_LEVEL_BOX = [816, 48, 37, 67]
-const LIGHT_BOX = [990, 47, 37, 58]
+
+const LIGHT_ICON = [956.42, 46.6, 31.8, 31.8]
+const LIGHT_CAPTION = [953.82, 92, 37, 11]
+const START_STOP_BOX = [1004.56, 41.24, 42.52, 42.52]
+const START_STOP_CAPTION = [1002.82, 92, 46, 11]
 
 function OptionWord({ word, b, active, color, on }) {
   return (
@@ -140,7 +142,6 @@ export default function Panel({ S, C, send }) {
   else if (toast) disp4 = String(C.shade)
   else if (C.mode) disp4 = fmtTime(C.time)
 
-  const dw = C.mode === 'probe' ? DONENESS[C.doneness].words : { medium: false, rare: false, well: false }
   const blinkField = (field) => on && C.focus === field ? ' tc-blink' : ''
 
   return (
@@ -152,9 +153,10 @@ export default function Panel({ S, C, send }) {
         </div>
 
         <img className="tc-static" style={box(...SMART_PROBE_BOX)} src={smartProbeImg} alt="" draggable={false} />
-        <img className="tc-static" style={{ ...box(...RACK_LEVEL_BOX), opacity: on ? 1 : 0 }} src={rackLevelImg} alt="" draggable={false} />
-        <img className="tc-static" style={box(...DUAL_LEVEL_BOX)} src={dualLevelImg} alt="" draggable={false} />
-        <img className="tc-static tc-hit" style={box(...LIGHT_BOX)} src={lightImg} alt="" draggable={false} onClick={() => send('LIGHT_TOGGLE')} />
+        <img className="tc-static" style={{ ...box(...RACK_LEVEL_LED), opacity: on ? 1 : 0 }} src={rackLevelImg} alt="" draggable={false} />
+        <span className="tc-caption" style={box(...RACK_LEVEL_CAPTION)}>Rack<br />Level</span>
+        <img className="tc-static" style={box(...DUAL_LEVEL_ICON)} src={dualLevelIcon} alt="" draggable={false} />
+        <span className="tc-caption" style={box(...DUAL_LEVEL_CAPTION)}>Dual<br />Level</span>
         <img className="tc-static tc-hit" style={{ ...box(...DIAL_BOX), borderRadius: '50%' }} src={dialImg} alt="" draggable={false} onClick={() => idle && C.focus && send('DIAL_CLICK')} />
 
         {/* ---- power ---- */}
@@ -162,19 +164,15 @@ export default function Panel({ S, C, send }) {
         <span className="tc-caption" style={box(...POWER_CAPTION)}>Power</span>
 
         {/* ---- probe ---- */}
-        <div className="tc-hit" style={box(...PROBE_HIT)} onClick={() => idle && send('PRESS_CATEGORY', 'probe')} />
         {PROBE_WORDS.map(({ word, b }, i) => (
           <OptionWord key={word} word={word} b={b} on={on} color={ORANGE}
             active={C.mode === 'probe' && C.optionIndex === i} />
         ))}
-        <div style={box(...PROBE_BUTTON)}>
+        <div className="tc-hit" style={box(...PROBE_BUTTON)} onClick={() => idle && send('PRESS_CATEGORY', 'probe')}>
           <ProbeButtonSvg indicatorColor={indicatorColor('probe')} blink={indicatorBlink('probe')} />
         </div>
 
         {/* ---- function / presets ---- */}
-        <div className="tc-hit" style={box(...FUNCTION_PRESET_HIT_TOP)} />
-        <div className="tc-hit" style={box(...FUNCTION_HIT)} onClick={() => idle && send('PRESS_CATEGORY', 'function')} />
-        <div className="tc-hit" style={box(...PRESET_HIT)} onClick={() => idle && send('PRESS_CATEGORY', 'preset')} />
         {FUNCTION_WORDS.map(({ word, b }, i) => (
           <OptionWord key={word} word={word} b={b} on={on} color="#fff"
             active={C.mode === 'function' && C.optionIndex === i} />
@@ -184,10 +182,10 @@ export default function Panel({ S, C, send }) {
             active={C.mode === 'preset' && C.optionIndex === i} />
         ))}
         <img className="tc-static" style={box(...FUNCTION_PRESET_PILL)} src={functionPresetPill} alt="" draggable={false} />
-        <div style={box(...FUNCTION_BUTTON)}>
+        <div className="tc-hit" style={box(...FUNCTION_BUTTON)} onClick={() => idle && send('PRESS_CATEGORY', 'function')}>
           <FunctionButtonSvg indicatorColor={indicatorColor('function')} blink={indicatorBlink('function')} />
         </div>
-        <div style={box(...PRESET_BUTTON)}>
+        <div className="tc-hit" style={box(...PRESET_BUTTON)} onClick={() => idle && send('PRESS_CATEGORY', 'preset')}>
           <PresetButtonSvg indicatorColor={indicatorColor('preset')} blink={indicatorBlink('preset')} />
         </div>
 
@@ -207,15 +205,14 @@ export default function Panel({ S, C, send }) {
           onClick={() => send(S === 'running' ? 'STOP' : 'START')} />
         <span className="tc-caption" style={box(...START_STOP_CAPTION)}>Start - Stop</span>
 
-        {/* ---- doneness readout + display captions (backlit) ---- */}
-        <div className="tc-glow" style={{ ...box(...DONENESS_PILL), opacity: on ? 1 : 0 }}>
-          <span className="tc-doneness-pill">Doneness</span>
-        </div>
-        <span className="tc-glow tc-word" style={{ ...box(...DONENESS_WORD.medium), opacity: on ? (dw.medium ? 1 : 0.5) : 0 }}>Medium</span>
-        <span className="tc-glow tc-word" style={{ ...box(...DONENESS_WORD.rare), opacity: on ? (dw.rare ? 1 : 0.5) : 0 }}>Rare</span>
-        <span className="tc-glow tc-word" style={{ ...box(...DONENESS_WORD.well), opacity: on ? (dw.well ? 1 : 0.5) : 0 }}>Well</span>
-        <span className="tc-glow tc-orange-caption" style={{ ...box(...DUAL_LEVEL_TEXT), opacity: on ? 1 : 0 }}>Dual Level</span>
+        {/* ---- light ---- */}
+        <img className="tc-static tc-hit" style={box(...LIGHT_ICON)} src={lightIcon} alt="" draggable={false} onClick={() => send('LIGHT_TOGGLE')} />
+        <span className="tc-caption" style={box(...LIGHT_CAPTION)}>Light</span>
 
+        {/* ---- doneness readout (backlit) ---- */}
+        {DONENESS_WORDS.map(({ word, b }, i) => (
+          <span key={word} className="tc-glow tc-word" style={{ ...box(...b), opacity: on ? (C.mode === 'probe' && C.doneness === i ? 1 : 0.5) : 0 }}>{word}</span>
+        ))}
         <span className="tc-glow tc-white-caption" style={{ ...box(...CAPTION_SLICES), opacity: on ? 1 : 0 }}>Slices</span>
         <span className="tc-glow tc-white-caption" style={{ ...box(...CAPTION_TARGET_TEMP), opacity: on ? 1 : 0 }}>Target Temp</span>
         <span className="tc-glow tc-white-caption" style={{ ...box(...CAPTION_CURRENT_TEMP), opacity: on ? 1 : 0 }}>Current Temp</span>
