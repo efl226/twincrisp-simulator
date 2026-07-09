@@ -1,6 +1,7 @@
 import { useReducer, useEffect, useRef } from 'react'
 import { reducer, init, PRETTY } from './machine.js'
 import Panel from './components/Panel.jsx'
+import figmaReference from './assets/reference/figma-reference.png'
 
 export default function App() {
   const [st, dispatch] = useReducer(reducer, init)
@@ -33,6 +34,10 @@ export default function App() {
         <div className="pp-status">
           STATUS&nbsp;&nbsp;<span style={{ color: st.msg ? 'var(--org-deep)' : 'var(--ink)', fontWeight: 700 }}>{(st.msg || PRETTY[st.S] || st.S).toUpperCase()}</span>
         </div>
+
+        {/* ---- reference — temporary, for alignment comparison while the panel wiring settles ---- */}
+        <div className="ref-label">FIGMA REFERENCE</div>
+        <img className="ref-image" src={figmaReference} alt="Figma reference" />
       </div>
     </div>
   )

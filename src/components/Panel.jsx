@@ -87,13 +87,17 @@ const CAPTION_SHADE = [750.68, 82.68, 26, 11]
 const TIME_ICON_BOX = [800.74, 42.24, 42.52, 42.52]
 const TIME_CAPTION = [808.86, 91, 26.28, 22.5]
 
-const DIAL_BOX = [831, 12.09, 108, 108]
+// "Frame 26" (Dial/Light/Start-Stop) reports its own position without the
+// +41,+1 offset every other frame gets from its UI CONTENTS parent, even
+// though visually it lines up as if it had one too — pixel-measured
+// against the reference render to confirm. Applied by hand below.
+const DIAL_BOX = [872, 13.09, 108, 108]
 const SMART_PROBE_BOX = [54.08, 10.59, 124.24, 18.37]
 
-const LIGHT_ICON = [956.42, 46.6, 31.8, 31.8]
-const LIGHT_CAPTION = [953.82, 92, 37, 11]
-const START_STOP_BOX = [1004.56, 41.24, 42.52, 42.52]
-const START_STOP_CAPTION = [1002.82, 92, 46, 11]
+const LIGHT_ICON = [997.42, 47.6, 31.8, 31.8]
+const LIGHT_CAPTION = [994.82, 93, 37, 11]
+const START_STOP_BOX = [1045.56, 42.24, 42.52, 42.52]
+const START_STOP_CAPTION = [1043.82, 93, 46, 11]
 
 function OptionWord({ word, b, active, color, on }) {
   return (

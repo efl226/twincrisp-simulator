@@ -81,6 +81,24 @@ body::before {
   color: var(--mut);
 }
 
+/* ---- Figma reference strip — temporary alignment aid, remove once the
+   panel wiring is fully settled ---- */
+.ref-label {
+  margin-top: 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--faint);
+  text-align: center;
+}
+.ref-image {
+  width: 1131.02px;
+  height: auto;
+  display: block;
+  border: 1px solid var(--cardline);
+  border-radius: 8px;
+}
+
 /* ---- Panel — fixed size, matches the Figma source exactly ---- */
 .panelwrap { position: relative; width: 1131.02px; }
 .panel {
