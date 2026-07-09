@@ -119,6 +119,11 @@ export function transition(S, C0, ev, arg) {
         if (C.mode !== cat) {
           C = { ...initCtx, mode: cat, optionIndex: 0, modeConfirmed: false, focus: 'mode', light: C.light }
         } else {
+          // Same category pressed again — step to the next option, same as
+          // scrolling the dial. Lets you cycle Beef -> Poultry -> Fish...
+          // by repeatedly pressing Probe, no dial needed.
+          const n = CATEGORIES[cat].options.length
+          C.optionIndex = (C.optionIndex + 1) % n
           C.modeConfirmed = false
           C.focus = 'mode'
         }
