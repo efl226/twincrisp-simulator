@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { CATEGORIES, DONENESS, RACK_LEVEL, currentOption, isToast, fmtTime } from '../machine.js'
+import { CATEGORIES, DONENESS, RACK_LEVEL, DEFAULT_TEMP, DEFAULT_TIME, currentOption, isToast, fmtTime } from '../machine.js'
 import { ProbeButtonSvg, FunctionButtonSvg, PresetButtonSvg, RackLevelSvg } from './ButtonSvgs.jsx'
 
 import panelTexture from '../assets/panel/panel-texture.png'
@@ -66,18 +66,24 @@ const DUAL_LEVEL_ICON = [441.59, 50.09, 31.18, 31.18]
 const DUAL_LEVEL_CAPTION = [438.68, 95.68, 37, 22]
 
 const TEMP_ICON_BOX = [495.42, 44.42, 42.52, 42.52]
-const TEMP_LABEL_STATIC = [495.68, 13.68, 42, 22.5]
+const TEMP_LABEL_STATIC = [495.68, 30, 42, 11]
 const TEMP_CAPTION = [503.54, 95.18, 26.28, 22.5]
 
+// Doneness ladder sits directly above the 3-digit display, tight gap —
+// was floating up near the panel top with a big dead gap before either
+// the digits or the temp icon.
 const DONENESS_WORDS = [
-  { word: 'Rare', b: [557.68, 8.68, 19, 11] },
-  { word: 'Med-Rare', b: [581.68, 8.68, 39, 11] },
-  { word: 'Med', b: [625.68, 8.68, 18, 11] },
-  { word: 'Med-Well', b: [557.68, 21.68, 37, 11] },
-  { word: 'Well', b: [599.68, 21.68, 17, 11] },
+  { word: 'Rare', b: [552, 18, 19, 11] },
+  { word: 'Med-Rare', b: [576, 18, 39, 11] },
+  { word: 'Med', b: [620, 18, 18, 11] },
+  { word: 'Med-Well', b: [552, 29, 37, 11] },
+  { word: 'Well', b: [594, 29, 17, 11] },
 ]
-const DISPLAY3 = [555, 40, 88, 35]
-const DISPLAY4 = [685, 40, 112, 35]
+// Widened for the 34px digit font (was sized for the old 26px font, which
+// is why the digits were overflowing into the doneness row above and the
+// Time icon to the right), and DISPLAY4 pulled left off the Time icon.
+const DISPLAY3 = [548, 43, 96, 35]
+const DISPLAY4 = [665, 43, 105, 35]
 const CAPTION_SLICES = [557.68, 82.68, 24, 11]
 const CAPTION_TARGET_TEMP = [586.68, 82.68, 49, 11]
 const CAPTION_CURRENT_TEMP = [691.68, 82.68, 54, 11]
@@ -137,15 +143,18 @@ export default function Panel({ S, C, send }) {
   if (C.mode === 'probe') value1Label = 'Doneness'
   else if (toast) value1Label = 'Slices'
 
+  // Before the option is confirmed, preview the phony default for whatever's
+  // currently highlighted (matches how doneness/rack-level already behave)
+  // instead of showing a stale/blank value until confirm.
   let disp3 = ''
   if (C.mode === 'probe') disp3 = String(DONENESS[C.doneness].temp)
   else if (toast) disp3 = String(C.slices)
-  else if (C.mode) disp3 = String(C.temp)
+  else if (C.mode) disp3 = String(C.modeConfirmed ? C.temp : (DEFAULT_TEMP[opt] ?? C.temp))
 
   let disp4 = ''
   if (C.mode === 'probe') disp4 = String(Math.round(C.currentTemp))
   else if (toast) disp4 = String(C.shade)
-  else if (C.mode) disp4 = fmtTime(C.time)
+  else if (C.mode) disp4 = fmtTime(C.modeConfirmed ? C.time : (DEFAULT_TIME[opt] ?? C.time))
 
   const blinkField = (field) => on && C.focus === field ? ' tc-blink' : ''
 
@@ -203,7 +212,7 @@ export default function Panel({ S, C, send }) {
         <div className="tc-caption tc-caption-2l" style={box(...TEMP_CAPTION)}><span>Temp</span><i /><span>Slices</span></div>
 
         {/* ---- time / shade ---- */}
-        <img className={'tc-static tc-hit' + (C.mode === 'probe' ? ' tc-disabled' : '')} style={box(...TIME_ICON_BOX)} src={timeIcon} alt="" draggable={false}
+        <img className="tc-static tc-hit" style={box(...TIME_ICON_BOX)} src={timeIcon} alt="" draggable={false}
           onClick={() => idle && C.mode && C.mode !== 'probe' && send('PRESS_VALUE2')} />
         <div className="tc-caption tc-caption-2l" style={box(...TIME_CAPTION)}><span>Time</span><i /><span>Shade</span></div>
 
