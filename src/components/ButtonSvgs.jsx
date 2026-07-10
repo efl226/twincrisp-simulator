@@ -15,15 +15,18 @@ const RACK_NUMBERS = {
   4: "M0 50.06V48.71L2.40857 43.46H4.06754L1.72893 48.65H5.23681V50.07H0V50.06ZM3.14811 51.26V46.66H4.61719V51.26H3.14811Z",
 }
 
-export function RackLevelSvg({ activeLevel, on, litColor = '#F26522', dimColor = '#9E9D9E' }) {
-  const colorFor = (n) => on ? (n === activeLevel ? litColor : dimColor) : 'transparent'
+// Numbers are pad-printed (always black, always visible, unaffected by
+// power). Pills are the only backlit part — orange when lit, otherwise
+// fully invisible (no dim/grey in-between state).
+export function RackLevelSvg({ activeLevels = [], on, litColor = '#F26522' }) {
+  const isLit = (n) => on && activeLevels.includes(n)
   return (
     <svg viewBox="0 0 33 52" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%', display: 'block' }}>
       {[1, 2, 3, 4].map((n) => (
-        <path key={'p' + n} d={RACK_PILLS[n]} fill={colorFor(n)} style={{ transition: 'fill .15s' }} />
+        <path key={'p' + n} d={RACK_PILLS[n]} fill={litColor} opacity={isLit(n) ? 1 : 0} style={{ transition: 'opacity .15s' }} />
       ))}
       {[1, 2, 3, 4].map((n) => (
-        <path key={'n' + n} d={RACK_NUMBERS[n]} fill={colorFor(n)} style={{ transition: 'fill .15s' }} />
+        <path key={'n' + n} d={RACK_NUMBERS[n]} fill="#1a1a1a" />
       ))}
       <path d="M27.4633 47.93C27.1835 47.93 26.9636 47.71 26.9636 47.43C26.9636 47.15 27.1835 46.93 27.4633 46.93C29.9618 46.93 32.0006 44.38 32.0006 41.25V10.22C32.0006 7.08998 29.9618 4.53998 27.4633 4.53998C27.1835 4.53998 26.9636 4.31998 26.9636 4.03998C26.9636 3.75998 27.1835 3.53998 27.4633 3.53998C30.5115 3.53998 33 6.52998 33 10.22V41.25C33 44.93 30.5215 47.93 27.4633 47.93Z" fill="#231F20" />
       <path d="M32.2804 19H27.7231C27.4433 19 27.2234 18.78 27.2234 18.5C27.2234 18.22 27.4433 18 27.7231 18H32.2804C32.5602 18 32.7801 18.22 32.7801 18.5C32.7801 18.78 32.5602 19 32.2804 19Z" fill="#231F20" />

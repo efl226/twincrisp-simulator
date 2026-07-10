@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { CATEGORIES, DONENESS, RACK_LEVEL, DEFAULT_TEMP, DEFAULT_TIME, currentOption, isToast, fmtTime } from '../machine.js'
+import { CATEGORIES, DONENESS, RACK_LEVEL, RACK_LEVEL_PAIR, DEFAULT_TEMP, DEFAULT_TIME, currentOption, isToast, fmtTime } from '../machine.js'
 import { ProbeButtonSvg, FunctionButtonSvg, PresetButtonSvg, RackLevelSvg } from './ButtonSvgs.jsx'
 
 import panelTexture from '../assets/panel/panel-texture.png'
@@ -136,6 +136,8 @@ export default function Panel({ S, C, send }) {
   const toast = isToast(C)
   const probeMode = C.mode === 'probe'
   const rackLevel = opt ? RACK_LEVEL[opt] : null
+  const dualPairLevel = C.dualLevel && rackLevel ? RACK_LEVEL_PAIR[rackLevel] : null
+  const activeRackLevels = [rackLevel, dualPairLevel].filter(Boolean)
 
   // Orange indicator is Probe-only; Function/Presets flash white.
   const indicatorColor = (cat) => (on && C.mode === cat) ? (cat === 'probe' ? ORANGE : '#fff') : GRAY_IND
@@ -169,12 +171,14 @@ export default function Panel({ S, C, send }) {
         </div>
 
         <img className="tc-static" style={box(...SMART_PROBE_BOX)} src={smartProbeImg} alt="" draggable={false} />
-        <span className="tc-glow tc-word" style={{ ...box(...RACK_LEVEL_DUAL_LABEL), opacity: on ? 1 : 0 }}>Dual</span>
+        {/* "Dual" only shows once Dual Level is actually toggled on */}
+        <span className="tc-glow tc-word" style={{ ...box(...RACK_LEVEL_DUAL_LABEL), opacity: on && C.dualLevel ? 1 : 0 }}>Dual</span>
         <div style={box(...RACK_LEVEL_LED)}>
-          <RackLevelSvg activeLevel={rackLevel} on={on} />
+          <RackLevelSvg activeLevels={activeRackLevels} on={on} />
         </div>
         <span className="tc-caption" style={box(...RACK_LEVEL_CAPTION)}>Rack<br />Level</span>
-        <img className="tc-static" style={box(...DUAL_LEVEL_ICON)} src={dualLevelIcon} alt="" draggable={false} />
+        <img className="tc-static tc-hit" style={box(...DUAL_LEVEL_ICON)} src={dualLevelIcon} alt="" draggable={false}
+          onClick={() => idle && C.mode && send('DUAL_LEVEL_TOGGLE')} />
         <span className="tc-caption" style={box(...DUAL_LEVEL_CAPTION)}>Dual<br />Level</span>
         <img className="tc-static tc-hit" style={{ ...box(...DIAL_BOX), borderRadius: '50%' }} src={dialImg} alt="" draggable={false} onClick={() => idle && C.focus && send('DIAL_CLICK')} />
 

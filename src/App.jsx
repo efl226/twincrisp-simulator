@@ -29,7 +29,6 @@ export default function App() {
           <h1>TwinCrisp<b>.</b></h1>
           <span className="tag">console</span>
         </div>
-        <div className="status"><span className="dot" /> simulation active</div>
         <Panel S={st.S} C={st.C} send={send} />
         <div className="pp-status">
           STATUS&nbsp;&nbsp;<span style={{ color: st.msg ? 'var(--org-deep)' : 'var(--ink)', fontWeight: 700 }}>{(st.msg || PRETTY[st.S] || st.S).toUpperCase()}</span>

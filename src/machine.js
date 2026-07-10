@@ -45,6 +45,10 @@ export const RACK_LEVEL = {
   Pizza: 2, Fries: 3, Veggies: 3, Snacks: 3, Nuggets: 3, Wings: 2, Cookies: 2,
 }
 
+// Dual Level cooks on two racks at once — it lights the suggested level
+// plus its pair (top/bottom split: 1<->3, 2<->4).
+export const RACK_LEVEL_PAIR = { 1: 3, 2: 4, 3: 1, 4: 2 }
+
 export const TEMP_STEP = 5, TEMP_MIN = 150, TEMP_MAX = 450
 export const TIME_STEP = 30, TIME_MIN = 30, TIME_MAX = 99 * 60 + 59
 export const SLICES_MIN = 1, SLICES_MAX = 4, DEFAULT_SLICES = 2
@@ -66,6 +70,7 @@ export const initCtx = {
   currentTemp: PROBE_START_TEMP,
   toastRemaining: 0,
   light: false,
+  dualLevel: false,
 }
 
 export const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v))
@@ -161,6 +166,10 @@ export function transition(S, C0, ev, arg) {
           if (C.focus === 'value2') C.focus = null
           else C = confirmThenArm(C, 'value2')
         }
+      }
+
+      else if (ev === 'DUAL_LEVEL_TOGGLE') {
+        if (C.mode) C.dualLevel = !C.dualLevel
       }
 
       else if (ev === 'START') {
