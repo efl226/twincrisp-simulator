@@ -57,11 +57,17 @@ export const PROBE_RISE_PER_TICK = 3   // demo-speed °/s toward target
 export const PROBE_START_TEMP = 70
 export const TOAST_SEC_PER_UNIT = 5    // demo-speed: toastRemaining = slices * shade * this
 
+// Seed values for Manual entry — set the moment Temp or Time is pressed
+// with no category selected, since there's no option to pull defaults from.
+export const DEFAULT_MANUAL_TEMP = 350
+export const DEFAULT_MANUAL_TIME = 900 // 15:00
+
 export const initCtx = {
   mode: null,            // 'probe' | 'function' | 'preset' | null
   optionIndex: 0,
   modeConfirmed: false,
   focus: null,           // 'mode' | 'value1' | 'value2' | null
+  manual: false,         // true = editing Temp/Time directly, no category selected
   doneness: DEFAULT_DONENESS,
   temp: 0,
   time: 0,
@@ -162,16 +168,22 @@ export function transition(S, C0, ev, arg) {
       }
 
       else if (ev === 'PRESS_VALUE1') {
-        if (C.mode) {
-          if (C.focus === 'value1') C.focus = null
-          else C = confirmThenArm(C, 'value1')
+        if (C.focus === 'value1') C.focus = null
+        else if (C.mode) C = confirmThenArm(C, 'value1')
+        else {
+          // No category selected — arm manual Temp/Time entry directly.
+          if (!C.manual) { C.manual = true; C.temp = DEFAULT_MANUAL_TEMP; C.time = DEFAULT_MANUAL_TIME }
+          C.focus = 'value1'
         }
       }
 
       else if (ev === 'PRESS_VALUE2') {
-        if (C.mode && C.mode !== 'probe') {
-          if (C.focus === 'value2') C.focus = null
-          else C = confirmThenArm(C, 'value2')
+        if (C.mode === 'probe') { /* no time value for probe */ }
+        else if (C.focus === 'value2') C.focus = null
+        else if (C.mode) C = confirmThenArm(C, 'value2')
+        else {
+          if (!C.manual) { C.manual = true; C.temp = DEFAULT_MANUAL_TEMP; C.time = DEFAULT_MANUAL_TIME }
+          C.focus = 'value2'
         }
       }
 
@@ -180,7 +192,8 @@ export function transition(S, C0, ev, arg) {
       }
 
       else if (ev === 'START') {
-        if (!C.mode || !C.modeConfirmed) { msg = 'Select an option first' }
+        const ready = C.manual || (C.mode && C.modeConfirmed)
+        if (!ready) { msg = 'Select an option first' }
         else {
           C.focus = null
           if (C.mode === 'probe') C.currentTemp = PROBE_START_TEMP

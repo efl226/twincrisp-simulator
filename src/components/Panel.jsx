@@ -156,11 +156,13 @@ export default function Panel({ S, C, send }) {
   if (C.mode === 'probe') disp3 = String(DONENESS[C.doneness].temp)
   else if (toast) disp3 = String(C.slices)
   else if (C.mode) disp3 = String(C.modeConfirmed ? C.temp : (DEFAULT_TEMP[opt] ?? C.temp))
+  else if (C.manual) disp3 = String(C.temp)
 
   let disp4 = ''
   if (C.mode === 'probe') disp4 = String(Math.round(C.currentTemp))
   else if (toast) disp4 = String(C.shade)
   else if (C.mode) disp4 = fmtTime(C.modeConfirmed ? C.time : (DEFAULT_TIME[opt] ?? C.time))
+  else if (C.manual) disp4 = fmtTime(C.time)
 
   const blinkField = (field) => on && C.focus === field ? ' tc-blink' : ''
 
@@ -217,12 +219,12 @@ export default function Panel({ S, C, send }) {
         {/* ---- temp / slices / doneness ---- */}
         <span className="tc-caption" style={box(...TEMP_LABEL_STATIC)}>Doneness</span>
         <img className="tc-static tc-hit" style={box(...TEMP_ICON_BOX)} src={tempIcon} alt="" draggable={false}
-          onClick={() => idle && C.mode && send('PRESS_VALUE1')} />
+          onClick={() => idle && send('PRESS_VALUE1')} />
         <div className="tc-caption tc-caption-2l" style={box(...TEMP_CAPTION)}><span>Temp</span><i /><span>Slices</span></div>
 
         {/* ---- time / shade ---- */}
         <img className="tc-static tc-hit" style={box(...TIME_ICON_BOX)} src={timeIcon} alt="" draggable={false}
-          onClick={() => idle && C.mode && C.mode !== 'probe' && send('PRESS_VALUE2')} />
+          onClick={() => idle && C.mode !== 'probe' && send('PRESS_VALUE2')} />
         <div className="tc-caption tc-caption-2l" style={box(...TIME_CAPTION)}><span>Time</span><i /><span>Shade</span></div>
 
         {/* ---- start / stop ---- */}
@@ -248,17 +250,19 @@ export default function Panel({ S, C, send }) {
         {S === 'greeting' && (
           <div className="tc-glow tc-disp" style={box(...GREETING_BOX)}>HI</div>
         )}
-        <div className={'tc-glow tc-disp' + blinkField('value1')} style={{ ...box(...DISPLAY3), opacity: on && C.mode ? 1 : 0 }}>{disp3}</div>
-        <div className={'tc-glow tc-disp' + (C.mode !== 'probe' ? blinkField('value2') : '')} style={{ ...box(...DISPLAY4), opacity: on && C.mode ? 1 : 0 }}>{disp4}</div>
+        <div className={'tc-glow tc-disp' + blinkField('value1')} style={{ ...box(...DISPLAY3), opacity: on && (C.mode || C.manual) ? 1 : 0 }}>{disp3}</div>
+        <div className={'tc-glow tc-disp' + (C.mode !== 'probe' ? blinkField('value2') : '')} style={{ ...box(...DISPLAY4), opacity: on && (C.mode || C.manual) ? 1 : 0 }}>{disp4}</div>
       </div>
 
       {/* ---- live readout — trustworthy summary while the on-panel wiring settles.
            Always rendered (content just goes blank when off) so the layout
            below it doesn't jump when the machine powers on/off. ---- */}
       <div className="tc-readout">
-        {on && (C.mode ? `${CATEGORIES[C.mode].label.toUpperCase()} → ${opt}${C.focus === 'mode' ? ' (selecting…)' : ''}` : 'Choose Probe / Function / Presets')}
-        {on && C.mode && C.modeConfirmed && `  ·  ${value1Label}${C.focus === 'value1' ? ' (adjusting…)' : ''}`}
-        {on && C.mode && C.mode !== 'probe' && C.modeConfirmed && `  ·  Time/Shade${C.focus === 'value2' ? ' (adjusting…)' : ''}`}
+        {on && (C.mode
+          ? `${CATEGORIES[C.mode].label.toUpperCase()} → ${opt}${C.focus === 'mode' ? ' (selecting…)' : ''}`
+          : (C.manual ? 'Manual Temp / Time' : 'Choose Probe / Function / Presets, or set Temp / Time manually'))}
+        {on && ((C.mode && C.modeConfirmed) || C.manual) && `  ·  ${value1Label}${C.focus === 'value1' ? ' (adjusting…)' : ''}`}
+        {on && ((C.mode && C.mode !== 'probe' && C.modeConfirmed) || C.manual) && `  ·  Time/Shade${C.focus === 'value2' ? ' (adjusting…)' : ''}`}
         {!on && ' '}
       </div>
     </div>
