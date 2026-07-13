@@ -16,14 +16,14 @@ const RACK_NUMBERS = {
 }
 
 // Numbers are pad-printed (always black, always visible, unaffected by
-// power). Pills are the only backlit part — orange when lit, otherwise
-// fully invisible (no dim/grey in-between state).
+// power). Pills are backlit orange: fully invisible while off, full orange
+// when lit/selected, and 50% opacity orange when on but unselected.
 export function RackLevelSvg({ activeLevels = [], on, litColor = '#F26522' }) {
-  const isLit = (n) => on && activeLevels.includes(n)
+  const opacityFor = (n) => !on ? 0 : (activeLevels.includes(n) ? 1 : 0.5)
   return (
     <svg viewBox="0 0 33 52" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%', display: 'block' }}>
       {[1, 2, 3, 4].map((n) => (
-        <path key={'p' + n} d={RACK_PILLS[n]} fill={litColor} opacity={isLit(n) ? 1 : 0} style={{ transition: 'opacity .15s' }} />
+        <path key={'p' + n} d={RACK_PILLS[n]} fill={litColor} opacity={opacityFor(n)} style={{ transition: 'opacity .15s' }} />
       ))}
       {[1, 2, 3, 4].map((n) => (
         <path key={'n' + n} d={RACK_NUMBERS[n]} fill="#1a1a1a" />

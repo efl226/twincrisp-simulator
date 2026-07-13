@@ -83,7 +83,8 @@ export const fmtTime = (s) => {
 export const currentOption = (C) => C.mode ? CATEGORIES[C.mode].options[C.optionIndex] : null
 export const isToast = (C) => C.mode === 'function' && currentOption(C) === 'Toast'
 
-export const PRETTY = { off: 'OFF', idle: 'IDLE', running: 'RUNNING' }
+export const PRETTY = { off: 'OFF', greeting: 'IDLE', idle: 'IDLE', running: 'RUNNING' }
+export const GREETING_MS = 2000
 
 // Confirms whatever is currently armed, then arms `next` (or leaves it
 // unarmed if next is null). Shared by both value buttons and dial-click.
@@ -113,7 +114,13 @@ export function transition(S, C0, ev, arg) {
 
   switch (S) {
     case 'off':
-      if (ev === 'POWER') { C = { ...initCtx }; S = 'idle' }
+      if (ev === 'POWER') { C = { ...initCtx }; S = 'greeting' }
+      break
+
+    // Brief "HI" splash on power-on, timed out by App.jsx via GREETING_DONE.
+    case 'greeting':
+      if (ev === 'POWER') { C = { ...initCtx }; S = 'off' }
+      else if (ev === 'GREETING_DONE') { S = 'idle' }
       break
 
     case 'idle':

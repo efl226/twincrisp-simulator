@@ -1,5 +1,5 @@
 import { useReducer, useEffect, useRef } from 'react'
-import { reducer, init, PRETTY } from './machine.js'
+import { reducer, init, PRETTY, GREETING_MS } from './machine.js'
 import Panel from './components/Panel.jsx'
 import figmaReference from './assets/reference/figma-reference.png'
 
@@ -21,6 +21,12 @@ export default function App() {
     const id = setTimeout(() => dispatch({ type: 'CLEARMSG' }), 1800)
     return () => clearTimeout(id)
   }, [st.msg])
+
+  useEffect(() => {
+    if (st.S !== 'greeting') return
+    const id = setTimeout(() => sendRef.current('GREETING_DONE'), GREETING_MS)
+    return () => clearTimeout(id)
+  }, [st.S])
 
   return (
     <div className="pp">

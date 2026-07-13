@@ -85,6 +85,8 @@ const DONENESS_WORDS = [
 // Time icon to the right), and DISPLAY4 pulled left off the Time icon.
 const DISPLAY3 = [548, 43, 96, 35]
 const DISPLAY4 = [665, 43, 105, 35]
+// Combined span of DISPLAY3+DISPLAY4 — used for the brief "HI" greeting on power-on.
+const GREETING_BOX = [548, 43, 222, 35]
 const CAPTION_SLICES = [557.68, 82.68, 24, 11]
 const CAPTION_TARGET_TEMP = [586.68, 82.68, 49, 11]
 const CAPTION_CURRENT_TEMP = [691.68, 82.68, 54, 11]
@@ -243,6 +245,9 @@ export default function Panel({ S, C, send }) {
         <span className="tc-glow tc-white-caption" style={{ ...box(...CAPTION_SHADE), opacity: on && toast ? 1 : 0 }}>Shade</span>
 
         {/* ---- digit displays (backlit) ---- */}
+        {S === 'greeting' && (
+          <div className="tc-glow tc-disp" style={box(...GREETING_BOX)}>HI</div>
+        )}
         <div className={'tc-glow tc-disp' + blinkField('value1')} style={{ ...box(...DISPLAY3), opacity: on && C.mode ? 1 : 0 }}>{disp3}</div>
         <div className={'tc-glow tc-disp' + (C.mode !== 'probe' ? blinkField('value2') : '')} style={{ ...box(...DISPLAY4), opacity: on && C.mode ? 1 : 0 }}>{disp4}</div>
       </div>

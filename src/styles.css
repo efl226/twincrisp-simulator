@@ -10,6 +10,12 @@
   font-weight: 500;
   font-display: swap;
 }
+@font-face {
+  font-family: 'AFCDigital';
+  src: url('./assets/Fonts/AFCDigital-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
 
 :root {
   --paper: #edeae1; --paper2: #e4e0d5; --line: #d8d3c6;
@@ -188,8 +194,8 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'DSEG7', 'JetBrains Mono', monospace;
-  font-weight: 700;
+  font-family: 'AFCDigital', 'DSEG7', 'JetBrains Mono', monospace;
+  font-weight: 400;
   letter-spacing: 1px;
   font-size: 34px;
   color: #fff;
