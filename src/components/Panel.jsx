@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { CATEGORIES, DONENESS, RACK_LEVEL, RACK_LEVEL_PAIR, DEFAULT_TEMP, DEFAULT_TIME, currentOption, isToast, fmtTime } from '../machine.js'
+import { CATEGORIES, DONENESS, RACK_LEVEL, RACK_LEVEL_PAIR, OPTION_DATA, TOAST_SLICE_BANDS, midCookAllowed, currentOption, isToast, fmtTime } from '../machine.js'
 import { ProbeButtonSvg, FunctionButtonSvg, PresetButtonSvg, RackLevelSvg } from './ButtonSvgs.jsx'
 
 import panelTexture from '../assets/panel/panel-texture.png'
@@ -122,7 +122,7 @@ export default function Panel({ S, C, send }) {
   const wheelAccum = useRef(0)
 
   const handleWheel = (e) => {
-    if (S !== 'idle' || !C.focus) return
+    if ((S !== 'idle' && S !== 'running') || !C.focus) return
     e.preventDefault()
     wheelAccum.current += e.deltaY
     const threshold = 40
@@ -134,6 +134,8 @@ export default function Panel({ S, C, send }) {
 
   const on = S !== 'off'
   const idle = S === 'idle'
+  const running = S === 'running'
+  const canPress = idle || running
   const opt = currentOption(C)
   const toast = isToast(C)
   const probeMode = C.mode === 'probe'
@@ -154,17 +156,20 @@ export default function Panel({ S, C, send }) {
   // instead of showing a stale/blank value until confirm.
   let disp3 = ''
   if (C.mode === 'probe') disp3 = String(DONENESS[C.doneness].temp)
-  else if (toast) disp3 = String(C.slices)
-  else if (C.mode) disp3 = String(C.modeConfirmed ? C.temp : (DEFAULT_TEMP[opt] ?? C.temp))
+  else if (toast) disp3 = TOAST_SLICE_BANDS[C.slices]
+  else if (C.mode) disp3 = String(C.modeConfirmed ? C.temp : (OPTION_DATA[opt]?.temp ?? C.temp))
   else if (C.manual) disp3 = String(C.temp)
 
   let disp4 = ''
   if (C.mode === 'probe') disp4 = String(Math.round(C.currentTemp))
   else if (toast) disp4 = String(C.shade)
-  else if (C.mode) disp4 = fmtTime(C.modeConfirmed ? C.time : (DEFAULT_TIME[opt] ?? C.time))
+  else if (C.mode) disp4 = fmtTime(C.modeConfirmed ? C.time : (OPTION_DATA[opt]?.time ?? C.time))
   else if (C.manual) disp4 = fmtTime(C.time)
 
   const blinkField = (field) => on && C.focus === field ? ' tc-blink' : ''
+  // While Running, Temp/Time (or Slices) may be locked per the option's
+  // spec — dim the icon so it visually reads as unavailable right now.
+  const midCookOK = (field) => midCookAllowed(S, C, field)
 
   return (
     <div className="panelwrap">
@@ -184,7 +189,7 @@ export default function Panel({ S, C, send }) {
         <img className="tc-static tc-hit" style={box(...DUAL_LEVEL_ICON)} src={dualLevelIcon} alt="" draggable={false}
           onClick={() => idle && C.mode && send('DUAL_LEVEL_TOGGLE')} />
         <span className="tc-caption" style={box(...DUAL_LEVEL_CAPTION)}>Dual<br />Level</span>
-        <img className="tc-static tc-hit" style={{ ...box(...DIAL_BOX), borderRadius: '50%' }} src={dialImg} alt="" draggable={false} onClick={() => idle && C.focus && send('DIAL_CLICK')} />
+        <img className="tc-static tc-hit" style={{ ...box(...DIAL_BOX), borderRadius: '50%' }} src={dialImg} alt="" draggable={false} onClick={() => canPress && C.focus && send('DIAL_CLICK')} />
 
         {/* ---- power ---- */}
         <img className="tc-static tc-hit" style={box(...POWER_ICON_BOX)} src={powerIcon} alt="" draggable={false} onClick={() => send('POWER')} />
@@ -218,13 +223,13 @@ export default function Panel({ S, C, send }) {
 
         {/* ---- temp / slices / doneness ---- */}
         <span className="tc-caption" style={box(...TEMP_LABEL_STATIC)}>Doneness</span>
-        <img className="tc-static tc-hit" style={box(...TEMP_ICON_BOX)} src={tempIcon} alt="" draggable={false}
-          onClick={() => idle && send('PRESS_VALUE1')} />
+        <img className={'tc-static tc-hit' + (running && !midCookOK('value1') ? ' tc-disabled' : '')} style={box(...TEMP_ICON_BOX)} src={tempIcon} alt="" draggable={false}
+          onClick={() => canPress && midCookOK('value1') && send('PRESS_VALUE1')} />
         <div className="tc-caption tc-caption-2l" style={box(...TEMP_CAPTION)}><span>Temp</span><i /><span>Slices</span></div>
 
         {/* ---- time / shade ---- */}
-        <img className="tc-static tc-hit" style={box(...TIME_ICON_BOX)} src={timeIcon} alt="" draggable={false}
-          onClick={() => idle && C.mode !== 'probe' && send('PRESS_VALUE2')} />
+        <img className={'tc-static tc-hit' + (running && !midCookOK('value2') ? ' tc-disabled' : '')} style={box(...TIME_ICON_BOX)} src={timeIcon} alt="" draggable={false}
+          onClick={() => canPress && C.mode !== 'probe' && midCookOK('value2') && send('PRESS_VALUE2')} />
         <div className="tc-caption tc-caption-2l" style={box(...TIME_CAPTION)}><span>Time</span><i /><span>Shade</span></div>
 
         {/* ---- start / stop ---- */}
