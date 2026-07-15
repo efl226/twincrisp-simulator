@@ -74,11 +74,11 @@ const TEMP_CAPTION = [503.54, 95.18, 26.28, 22.5]
 // was floating up near the panel top with a big dead gap before either
 // the digits or the temp icon.
 const DONENESS_WORDS = [
-  { word: 'Rare', b: [552, 18, 19, 11] },
-  { word: 'Med-Rare', b: [576, 18, 39, 11] },
-  { word: 'Med', b: [620, 18, 18, 11] },
-  { word: 'Med-Well', b: [552, 29, 37, 11] },
-  { word: 'Well', b: [594, 29, 17, 11] },
+  { word: 'Rare', b: [552, 13, 19, 11] },
+  { word: 'Med-Rare', b: [576, 13, 39, 11] },
+  { word: 'Med', b: [620, 13, 18, 11] },
+  { word: 'Med-Well', b: [552, 24, 37, 11] },
+  { word: 'Well', b: [594, 24, 17, 11] },
 ]
 // Widened for the 34px digit font (was sized for the old 26px font, which
 // is why the digits were overflowing into the doneness row above and the

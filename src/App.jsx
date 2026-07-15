@@ -40,9 +40,13 @@ export default function App() {
           STATUS&nbsp;&nbsp;<span style={{ color: st.msg ? 'var(--org-deep)' : 'var(--ink)', fontWeight: 700 }}>{(st.msg || PRETTY[st.S] || st.S).toUpperCase()}</span>
         </div>
 
-        {/* ---- reference — temporary, for alignment comparison while the panel wiring settles ---- */}
-        <div className="ref-label">FIGMA REFERENCE</div>
-        <img className="ref-image" src={figmaReference} alt="Figma reference" />
+        {/* ---- reference — dev-only alignment aid, hidden from the deployed build ---- */}
+        {import.meta.env.DEV && (
+          <>
+            <div className="ref-label">FIGMA REFERENCE</div>
+            <img className="ref-image" src={figmaReference} alt="Figma reference" />
+          </>
+        )}
       </div>
     </div>
   )
