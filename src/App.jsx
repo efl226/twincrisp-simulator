@@ -39,14 +39,9 @@ export default function App() {
         <div className="pp-status">
           STATUS&nbsp;&nbsp;<span style={{ color: st.msg ? 'var(--org-deep)' : 'var(--ink)', fontWeight: 700 }}>{(st.msg || PRETTY[st.S] || st.S).toUpperCase()}</span>
         </div>
-
-        {/* ---- reference — dev-only alignment aid, hidden from the deployed build ---- */}
-        {import.meta.env.DEV && (
-          <>
-            <div className="ref-label">FIGMA REFERENCE</div>
-            <img className="ref-image" src={figmaReference} alt="Figma reference" />
-          </>
-        )}
+        <div>
+            <span className="tag">Scroll on Mouse Pad or use Up and Down Arrow Keys to use the Dial</span>
+        </div>
       </div>
     </div>
   )

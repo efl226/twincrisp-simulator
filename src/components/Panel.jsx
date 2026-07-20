@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import { CATEGORIES, DONENESS, RACK_LEVEL, RACK_LEVEL_PAIR, OPTION_DATA, TOAST_SLICE_BANDS, midCookAllowed, currentOption, isToast, fmtTime } from '../machine.js'
 import { ProbeButtonSvg, FunctionButtonSvg, PresetButtonSvg, RackLevelSvg } from './ButtonSvgs.jsx'
 
@@ -38,6 +38,10 @@ const PROBE_WORDS = [
 const FUNCTION_PRESET_PILL = [195.87, 46.81, 163.91, 34.02]
 const FUNCTION_BUTTON = [220.97, 58.68, 33.89, 14.06]
 const PRESET_BUTTON = [302.97, 58.69, 30.08, 14.05]
+// Figma node 67:7245 — an engraved-groove line, not a flat dark divider:
+// a soft gray gradient (darker at top, lighter at bottom), sampled directly
+// from the exported asset pixels.
+const FUNCTION_PRESET_DIVIDER = [280, 53, 1.77, 23.81]
 
 const FUNCTION_WORDS = [
   { word: 'Air Fry', b: [190.32, 13.82, 43, 11] },
@@ -132,6 +136,19 @@ export default function Panel({ S, C, send }) {
     }
   }
 
+  // Keyboard backup for the (finicky) scroll-wheel dial — Up/Down arrow
+  // keys drive the same DIAL event the wheel would, no UI change. Up
+  // increases the armed value, Down decreases it.
+  useEffect(() => {
+    const handleKey = (e) => {
+      if ((S !== 'idle' && S !== 'running') || !C.focus) return
+      if (e.key === 'ArrowUp') { e.preventDefault(); send('DIAL', 1) }
+      else if (e.key === 'ArrowDown') { e.preventDefault(); send('DIAL', -1) }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [S, C.focus, send])
+
   const on = S !== 'off'
   const idle = S === 'idle'
   const running = S === 'running'
@@ -214,6 +231,7 @@ export default function Panel({ S, C, send }) {
             shown={C.mode === 'preset'} active={C.optionIndex === i} />
         ))}
         <img className="tc-static" style={box(...FUNCTION_PRESET_PILL)} src={functionPresetPill} alt="" draggable={false} />
+        <div className="tc-static" style={{ ...box(...FUNCTION_PRESET_DIVIDER), background: 'linear-gradient(#868484, #bebbbb)' }} />
         <div className="tc-hit" style={box(...FUNCTION_BUTTON)} onClick={() => idle && send('PRESS_CATEGORY', 'function')}>
           <FunctionButtonSvg indicatorColor={indicatorColor('function')} blink={indicatorBlink('function')} />
         </div>

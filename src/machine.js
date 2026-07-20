@@ -279,6 +279,10 @@ export function transition(S, C0, ev, arg) {
       }
 
       else if (ev === 'START') {
+        // Starting with a highlighted-but-unconfirmed option locks it in on
+        // the way, same as dial-click or switching to Temp/Time — Start is
+        // just one more way to confirm, not a separate required step.
+        if (C.focus === 'mode') C = confirmThenArm(C, null)
         const ready = C.manual || (C.mode && C.modeConfirmed)
         if (!ready) { msg = 'Select an option first' }
         else {
