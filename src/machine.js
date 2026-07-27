@@ -10,18 +10,36 @@ export const CATEGORIES = {
   preset:   { label: 'Presets',  options: ['Toast', 'Bagel', 'Fries', 'Wings', 'Snacks', 'Nuggets', 'Cookies', 'Veggies'] },
 }
 
-// Doneness is printed on the panel as five distinct labels (own text each,
-// not composited from shared words like the earlier layout). Probe doesn't
-// appear in the real function-data spec at all — these targets, and the
-// Beef/Poultry/etc rack suggestions below, remain placeholder/dummy values.
-export const DONENESS = [
-  { name: 'Rare', temp: 125 },
-  { name: 'Med-Rare', temp: 135 },
-  { name: 'Med', temp: 145 },
-  { name: 'Med-Well', temp: 150 },
-  { name: 'Well', temp: 160 },
-]
-export const DEFAULT_DONENESS = 1 // Med-Rare
+// Doneness is printed on the panel as five fixed named slots (Rare through
+// Well) — but not every meat offers every level, and each meat maps a level
+// to its own real safe-cook temp. `doneness` in context is always an INDEX
+// into DONENESS_NAMES (0-4); which indices are valid depends on the meat
+// (see PROBE_DONENESS). Real values — Beef/Lamb share a ladder, Fish and
+// Pork each have their own (both skip Rare).
+export const DONENESS_NAMES = ['Rare', 'Med-Rare', 'Med', 'Med-Well', 'Well']
+export const PROBE_DONENESS = {
+  Beef: { Rare: 120, 'Med-Rare': 130, Med: 140, 'Med-Well': 145, Well: 155 },
+  Lamb: { Rare: 120, 'Med-Rare': 130, Med: 140, 'Med-Well': 145, Well: 155 },
+  Fish: { 'Med-Rare': 120, Med: 130, 'Med-Well': 140, Well: 150 },
+  Pork: { 'Med-Rare': 130, Med: 140, 'Med-Well': 150, Well: 160 },
+}
+export const DEFAULT_DONENESS = 1 // Med-Rare — valid for every meat above
+
+function validDonenessIndices(meat) {
+  const table = PROBE_DONENESS[meat]
+  if (!table) return []
+  return DONENESS_NAMES.map((_, i) => i).filter(i => table[DONENESS_NAMES[i]] != null)
+}
+
+// Snaps `doneness` back into range whenever the highlighted meat changes —
+// e.g. cycling from Beef (Rare valid) to Fish (Rare not offered) shouldn't
+// leave an invalid level silently selected.
+function clampDonenessToMeat(C) {
+  if (!probeHasDoneness(C)) return C
+  const valid = validDonenessIndices(currentOption(C))
+  if (valid.includes(C.doneness)) return C
+  return { ...C, doneness: valid.includes(DEFAULT_DONENESS) ? DEFAULT_DONENESS : valid[0] }
+}
 
 export const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v))
 
@@ -48,11 +66,13 @@ function tieredStep(value, dir, tiers, lo, hi) {
 
 // Poultry and Manual (the probe sub-option, not the no-category manual
 // entry mode below) don't get a Rare-to-Well doneness ladder — just one
-// settable target temperature, same shape as a plain Temp field. Dummy
-// placeholder values — Probe has no real spec data at all.
+// settable target temperature, same shape as a plain Temp field.
 export const PROBE_SINGLE_TEMP_OPTIONS = ['Poultry', 'Manual']
 export const PROBE_TARGET_DATA = {
-  Poultry: { temp: 165, tempMin: 150, tempMax: 200, tempTiers: flatTier(5) },
+  // Chicken/Turkey: one prescribed safe temp (165°F), not a range — fixed,
+  // same trick as Broil's temp (tempMin === tempMax makes the dial a no-op).
+  Poultry: { temp: 165, tempMin: 165, tempMax: 165, tempTiers: flatTier(5) },
+  // Manual has no food-type table to pull from — dummy free-set range.
   Manual: { temp: 130, tempMin: 100, tempMax: 210, tempTiers: flatTier(5) },
 }
 
@@ -186,10 +206,15 @@ function applyDial(C, dir) {
   if (C.focus === 'mode' && C.mode) {
     const n = CATEGORIES[C.mode].options.length
     C.optionIndex = (C.optionIndex + dir + n) % n
+    C = clampDonenessToMeat(C)
   } else if (C.focus === 'value1') {
     if (C.mode === 'probe') {
-      if (probeHasDoneness(C)) C.doneness = clamp(C.doneness + dir, 0, DONENESS.length - 1)
-      else {
+      if (probeHasDoneness(C)) {
+        const valid = validDonenessIndices(currentOption(C))
+        const pos = valid.indexOf(C.doneness)
+        const n = valid.length
+        C.doneness = valid[((pos < 0 ? 0 : pos) + dir + n) % n]
+      } else {
         const pd = PROBE_TARGET_DATA[currentOption(C)]
         if (pd) C.temp = tieredStep(C.temp, dir, pd.tempTiers, pd.tempMin, pd.tempMax)
       }
@@ -269,6 +294,7 @@ export function transition(S, C0, ev, arg) {
           C.optionIndex = (C.optionIndex + 1) % n
           C.modeConfirmed = false
           C.focus = 'mode'
+          C = clampDonenessToMeat(C)
         }
       }
 
@@ -321,7 +347,7 @@ export function transition(S, C0, ev, arg) {
     case 'running':
       if (ev === 'TICK') {
         if (C.mode === 'probe') {
-          const target = probeHasDoneness(C) ? DONENESS[C.doneness].temp : C.temp
+          const target = probeHasDoneness(C) ? PROBE_DONENESS[currentOption(C)][DONENESS_NAMES[C.doneness]] : C.temp
           C.currentTemp = Math.min(target, C.currentTemp + PROBE_RISE_PER_TICK)
           if (C.currentTemp >= target) { C = { ...initCtx, light: C.light }; S = 'idle' }
         } else if (isToast(C)) {
