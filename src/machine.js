@@ -2,10 +2,12 @@
 // Pure, framework-agnostic transition logic — same shape as the AFC-6
 // simulator: transition(state, context, event, arg) -> { S, C, msg }.
 
+// Order here must match FUNCTION_WORDS/PRESET_WORDS in Panel.jsx exactly —
+// optionIndex highlighting lines a word up with its position by array index.
 export const CATEGORIES = {
   probe:    { label: 'Probe',    options: ['Beef', 'Poultry', 'Fish', 'Pork', 'Lamb', 'Manual'] },
-  function: { label: 'Function', options: ['Air Fry', 'Bagel', 'Toast', 'Bake', 'Broil', 'Slow Cook', 'Warm', 'Dehydrate'] },
-  preset:   { label: 'Presets',  options: ['Pizza', 'Fries', 'Veggies', 'Snacks', 'Nuggets', 'Wings', 'Cookies'] },
+  function: { label: 'Function', options: ['Air Fry', 'Bake', 'Roast', 'Pizza', 'Broil', 'Slow Cook', 'Warm', 'Dehydrate'] },
+  preset:   { label: 'Presets',  options: ['Toast', 'Bagel', 'Fries', 'Wings', 'Snacks', 'Nuggets', 'Cookies', 'Veggies'] },
 }
 
 // Doneness is printed on the panel as five distinct labels (own text each,
@@ -44,6 +46,16 @@ function tieredStep(value, dir, tiers, lo, hi) {
   return clamp(value + dir * step, lo, hi)
 }
 
+// Poultry and Manual (the probe sub-option, not the no-category manual
+// entry mode below) don't get a Rare-to-Well doneness ladder — just one
+// settable target temperature, same shape as a plain Temp field. Dummy
+// placeholder values — Probe has no real spec data at all.
+export const PROBE_SINGLE_TEMP_OPTIONS = ['Poultry', 'Manual']
+export const PROBE_TARGET_DATA = {
+  Poultry: { temp: 165, tempMin: 150, tempMax: 200, tempTiers: flatTier(5) },
+  Manual: { temp: 130, tempMin: 100, tempMax: 210, tempTiers: flatTier(5) },
+}
+
 // ---- Per-option Temp/Time data ----
 // Sourced from "TwinCrisp Prototype Function Data (Single/Double layer) —
 // 20260602" wherever a matching function/preset exists in that sheet.
@@ -60,43 +72,40 @@ function tieredStep(value, dir, tiers, lo, hi) {
 // "Low" row (long duration, low temp, 80-300°F, up to 12hr) is a strong
 // conceptual match — used here, but flag if that mapping is wrong.
 //
-// Two spec rows were NOT used because nothing in the prototype's option
-// list matches them yet: "Roast" (375°F/45min, 200-450°F, 1min-2hr) and a
-// second yellow-highlighted "Low" variant. Let me know if either should be
-// added as a new option.
+// A second yellow-highlighted "Low" variant in the spec still isn't used —
+// nothing in the prototype's option list matches it.
 export const OPTION_DATA = {
   // ---- Functions ----
   'Air Fry':   { temp: 400, time: 1200, tempMin: 200, tempMax: 450, tempTiers: flatTier(25), timeMin: 60, timeMax: 3600, timeTiers: TIER_TIME_STD, midCookTemp: true, midCookTime: true },
-  'Bagel':     { temp: 350, time: 300, tempMin: 200, tempMax: 450, tempTiers: flatTier(25), timeMin: 60, timeMax: 3600, timeTiers: TIER_TIME_STD, midCookTemp: true, midCookTime: true, dummy: true },
   'Bake':      { temp: 350, time: 780, tempMin: 200, tempMax: 450, tempTiers: flatTier(25), timeMin: 60, timeMax: 7200, timeTiers: TIER_TIME_STD, midCookTemp: true, midCookTime: true },
+  Roast:       { temp: 375, time: 2700, tempMin: 200, tempMax: 450, tempTiers: flatTier(25), timeMin: 60, timeMax: 7200, timeTiers: TIER_TIME_STD, midCookTemp: true, midCookTime: true },
+  Pizza:       { temp: 400, time: 600, tempMin: 350, tempMax: 450, tempTiers: flatTier(25), timeMin: 60, timeMax: 7200, timeTiers: TIER_TIME_STD, midCookTemp: true, midCookTime: true },
   'Broil':     { temp: 450, time: 300, tempMin: 450, tempMax: 450, tempTiers: flatTier(25), timeMin: 60, timeMax: 7200, timeTiers: TIER_TIME_STD, midCookTemp: false, midCookTime: true },
   'Slow Cook': { temp: 200, time: 7200, tempMin: 80, tempMax: 300, tempTiers: TIER_TEMP_LOW, timeMin: 60, timeMax: 43200, timeTiers: TIER_TIME_LONG, midCookTemp: true, midCookTime: true, sourcedAs: 'Low' },
   'Warm':      { temp: 150, time: 1800, tempMin: 150, tempMax: 300, tempTiers: flatTier(25), timeMin: 60, timeMax: 7200, timeTiers: TIER_TIME_STD, midCookTemp: true, midCookTime: true },
   'Dehydrate': { temp: 130, time: 7200, tempMin: 100, tempMax: 200, tempTiers: flatTier(5), timeMin: 60, timeMax: 259200, timeTiers: TIER_TIME_LONG, midCookTemp: true, midCookTime: true },
 
-  // ---- Presets ----
-  Pizza:   { temp: 400, time: 600, tempMin: 350, tempMax: 450, tempTiers: flatTier(25), timeMin: 60, timeMax: 7200, timeTiers: TIER_TIME_STD, midCookTemp: true, midCookTime: true },
+  // ---- Presets ---- (Toast excluded — special-cased below, no Temp/Time)
+  Bagel:   { temp: 350, time: 300, tempMin: 200, tempMax: 450, tempTiers: flatTier(25), timeMin: 60, timeMax: 3600, timeTiers: TIER_TIME_STD, midCookTemp: true, midCookTime: true, dummy: true },
   Fries:   { temp: 450, time: 1500, tempMin: 200, tempMax: 450, tempTiers: flatTier(25), timeMin: 60, timeMax: 3600, timeTiers: TIER_TIME_STD, midCookTemp: true, midCookTime: true },
-  Veggies: { temp: 400, time: 600, tempMin: 200, tempMax: 450, tempTiers: flatTier(25), timeMin: 60, timeMax: 3600, timeTiers: TIER_TIME_STD, midCookTemp: true, midCookTime: true },
+  Wings:   { temp: 400, time: 1800, tempMin: 200, tempMax: 450, tempTiers: flatTier(25), timeMin: 60, timeMax: 3600, timeTiers: TIER_TIME_STD, midCookTemp: true, midCookTime: true },
   Snacks:  { temp: 400, time: 360, tempMin: 200, tempMax: 450, tempTiers: flatTier(25), timeMin: 60, timeMax: 3600, timeTiers: TIER_TIME_STD, midCookTemp: true, midCookTime: true },
   Nuggets: { temp: 400, time: 600, tempMin: 200, tempMax: 450, tempTiers: flatTier(25), timeMin: 60, timeMax: 3600, timeTiers: TIER_TIME_STD, midCookTemp: true, midCookTime: true },
-  Wings:   { temp: 400, time: 1800, tempMin: 200, tempMax: 450, tempTiers: flatTier(25), timeMin: 60, timeMax: 3600, timeTiers: TIER_TIME_STD, midCookTemp: true, midCookTime: true },
   Cookies: { temp: 325, time: 600, tempMin: 200, tempMax: 450, tempTiers: flatTier(25), timeMin: 60, timeMax: 3600, timeTiers: TIER_TIME_STD, midCookTemp: true, midCookTime: true, dummy: true },
+  Veggies: { temp: 400, time: 600, tempMin: 200, tempMax: 450, tempTiers: flatTier(25), timeMin: 60, timeMax: 3600, timeTiers: TIER_TIME_STD, midCookTemp: true, midCookTime: true },
 }
 
 // Toast doesn't use Temp/Time at all — real spec: fixed 450°F, Shade 1-7
-// (default 4, NOT adjustable mid-cook), and Slices grouped into bands
-// rather than a plain count (1-2 / 3-4 / 5-6 / 7-9, default the top band,
-// IS adjustable mid-cook). `slices` in context stores a band INDEX.
+// (default 4, NOT adjustable mid-cook). Slices is a plain 1-9 count (IS
+// adjustable mid-cook) — the spec's grouped bands (1-2/3-4/5-6/7-9) were
+// tried first but simplified back to a direct number per feedback.
 export const TOAST_TEMP = 450
-export const TOAST_SLICE_BANDS = ['1-2', '3-4', '5-6', '7-9']
-const TOAST_SLICE_BAND_VALUE = [1.5, 3.5, 5.5, 8] // representative count per band, for the demo countdown
-export const DEFAULT_TOAST_SLICE_BAND = 3 // '7-9'
+export const SLICES_MIN = 1, SLICES_MAX = 9, DEFAULT_SLICES = 8
 export const SHADE_MIN = 1, SHADE_MAX = 7, DEFAULT_SHADE = 4
 
 export const PROBE_RISE_PER_TICK = 3   // demo-speed °/s toward target
 export const PROBE_START_TEMP = 70
-export const TOAST_SEC_PER_UNIT = 5    // demo-speed: toastRemaining = slice-band value * shade * this
+export const TOAST_SEC_PER_UNIT = 5    // demo-speed: toastRemaining = slices * shade * this
 
 // No category selected — the spec sheet has no "manual" row, so this range
 // is a dummy stand-in (same shape as a generic Function entry).
@@ -112,9 +121,9 @@ export const RACK_LEVEL = {
   // probe
   Beef: 2, Poultry: 2, Fish: 1, Pork: 2, Lamb: 2, Manual: 2,
   // function
-  'Air Fry': 2, Bagel: 3, Toast: 4, Bake: 2, Broil: 4, 'Slow Cook': 1, Warm: 1, Dehydrate: 3,
+  'Air Fry': 2, Bake: 2, Roast: 2, Pizza: 2, Broil: 4, 'Slow Cook': 1, Warm: 1, Dehydrate: 3,
   // presets
-  Pizza: 2, Fries: 3, Veggies: 3, Snacks: 3, Nuggets: 3, Wings: 2, Cookies: 2,
+  Toast: 4, Bagel: 3, Fries: 3, Wings: 2, Snacks: 3, Nuggets: 3, Cookies: 2, Veggies: 3,
 }
 
 // Dual Level cooks on two racks at once — it lights the suggested level
@@ -130,7 +139,7 @@ export const initCtx = {
   doneness: DEFAULT_DONENESS,
   temp: 0,
   time: 0,
-  slices: DEFAULT_TOAST_SLICE_BAND,
+  slices: DEFAULT_SLICES,
   shade: DEFAULT_SHADE,
   currentTemp: PROBE_START_TEMP,
   toastRemaining: 0,
@@ -139,7 +148,9 @@ export const initCtx = {
 }
 
 export const currentOption = (C) => C.mode ? CATEGORIES[C.mode].options[C.optionIndex] : null
-export const isToast = (C) => C.mode === 'function' && currentOption(C) === 'Toast'
+export const isToast = (C) => C.mode === 'preset' && currentOption(C) === 'Toast'
+// Beef/Fish/Pork/Lamb get the Rare-to-Well ladder; Poultry and Manual don't.
+export const probeHasDoneness = (C) => C.mode === 'probe' && !PROBE_SINGLE_TEMP_OPTIONS.includes(currentOption(C))
 
 export const PRETTY = { off: 'OFF', greeting: 'IDLE', idle: 'IDLE', running: 'RUNNING' }
 export const GREETING_MS = 2000
@@ -176,8 +187,14 @@ function applyDial(C, dir) {
     const n = CATEGORIES[C.mode].options.length
     C.optionIndex = (C.optionIndex + dir + n) % n
   } else if (C.focus === 'value1') {
-    if (C.mode === 'probe') C.doneness = clamp(C.doneness + dir, 0, DONENESS.length - 1)
-    else if (isToast(C)) C.slices = clamp(C.slices + dir, 0, TOAST_SLICE_BANDS.length - 1)
+    if (C.mode === 'probe') {
+      if (probeHasDoneness(C)) C.doneness = clamp(C.doneness + dir, 0, DONENESS.length - 1)
+      else {
+        const pd = PROBE_TARGET_DATA[currentOption(C)]
+        if (pd) C.temp = tieredStep(C.temp, dir, pd.tempTiers, pd.tempMin, pd.tempMax)
+      }
+    }
+    else if (isToast(C)) C.slices = clamp(C.slices + dir, SLICES_MIN, SLICES_MAX)
     else {
       const spec = specFor(C)
       if (spec) C.temp = tieredStep(C.temp, dir, spec.tempTiers, spec.tempMin, spec.tempMax)
@@ -194,19 +211,20 @@ function applyDial(C, dir) {
 }
 
 // Confirms whatever is currently armed, then arms `next` (or leaves it
-// unarmed if next is null). Shared by both value buttons and dial-click.
+// unarmed if next is null). Shared by both value buttons and Start.
 function confirmThenArm(C, next) {
   C = { ...C }
   if (C.focus === 'mode') {
     C.modeConfirmed = true
     const opt = currentOption(C)
-    if (C.mode !== 'probe') {
-      if (isToast(C)) {
-        // slices/shade keep whatever they already held (defaults from initCtx)
-      } else {
-        const spec = OPTION_DATA[opt]
-        if (spec) { C.temp = spec.temp; C.time = spec.time }
-      }
+    if (C.mode === 'probe') {
+      const pd = PROBE_TARGET_DATA[opt]
+      if (pd) C.temp = pd.temp // Poultry/Manual: single target temp, no doneness ladder
+    } else if (isToast(C)) {
+      // slices/shade keep whatever they already held (defaults from initCtx)
+    } else {
+      const spec = OPTION_DATA[opt]
+      if (spec) { C.temp = spec.temp; C.time = spec.time }
     }
   }
   C.focus = next
@@ -227,7 +245,13 @@ export function transition(S, C0, ev, arg) {
     // Brief "HI" splash on power-on, timed out by App.jsx via GREETING_DONE.
     case 'greeting':
       if (ev === 'POWER') { C = { ...initCtx }; S = 'off' }
-      else if (ev === 'GREETING_DONE') { S = 'idle' }
+      else if (ev === 'GREETING_DONE') {
+        // Function/Air Fry pre-selected and blinking, ready to confirm or
+        // browse elsewhere — Idle never opens on a fully blank screen. Keep
+        // C.light as-is in case Light was toggled during the splash.
+        C = { ...initCtx, mode: 'function', optionIndex: 0, modeConfirmed: false, focus: 'mode', light: C.light }
+        S = 'idle'
+      }
       break
 
     case 'idle':
@@ -249,10 +273,6 @@ export function transition(S, C0, ev, arg) {
       }
 
       else if (ev === 'DIAL') { C = applyDial(C, arg) }
-
-      else if (ev === 'DIAL_CLICK') {
-        if (C.focus) C = confirmThenArm(C, null)
-      }
 
       else if (ev === 'PRESS_VALUE1') {
         if (C.focus === 'value1') C.focus = null
@@ -280,15 +300,15 @@ export function transition(S, C0, ev, arg) {
 
       else if (ev === 'START') {
         // Starting with a highlighted-but-unconfirmed option locks it in on
-        // the way, same as dial-click or switching to Temp/Time — Start is
-        // just one more way to confirm, not a separate required step.
+        // the way, same as switching to Temp/Time — Start is just one more
+        // way to confirm, not a separate required step.
         if (C.focus === 'mode') C = confirmThenArm(C, null)
         const ready = C.manual || (C.mode && C.modeConfirmed)
         if (!ready) { msg = 'Select an option first' }
         else {
           C.focus = null
           if (C.mode === 'probe') C.currentTemp = PROBE_START_TEMP
-          else if (isToast(C)) C.toastRemaining = TOAST_SLICE_BAND_VALUE[C.slices] * C.shade * TOAST_SEC_PER_UNIT
+          else if (isToast(C)) C.toastRemaining = C.slices * C.shade * TOAST_SEC_PER_UNIT
           S = 'running'
         }
       }
@@ -301,7 +321,7 @@ export function transition(S, C0, ev, arg) {
     case 'running':
       if (ev === 'TICK') {
         if (C.mode === 'probe') {
-          const target = DONENESS[C.doneness].temp
+          const target = probeHasDoneness(C) ? DONENESS[C.doneness].temp : C.temp
           C.currentTemp = Math.min(target, C.currentTemp + PROBE_RISE_PER_TICK)
           if (C.currentTemp >= target) { C = { ...initCtx, light: C.light }; S = 'idle' }
         } else if (isToast(C)) {
@@ -314,10 +334,6 @@ export function transition(S, C0, ev, arg) {
       }
 
       else if (ev === 'DIAL') { C = applyDial(C, arg) }
-
-      else if (ev === 'DIAL_CLICK') {
-        if (C.focus) C.focus = null
-      }
 
       else if (ev === 'PRESS_VALUE1') {
         if (midCookAllowed(S, C, 'value1')) C.focus = C.focus === 'value1' ? null : 'value1'

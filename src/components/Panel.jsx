@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react'
-import { CATEGORIES, DONENESS, RACK_LEVEL, RACK_LEVEL_PAIR, OPTION_DATA, TOAST_SLICE_BANDS, midCookAllowed, currentOption, isToast, fmtTime } from '../machine.js'
+import { CATEGORIES, DONENESS, RACK_LEVEL, RACK_LEVEL_PAIR, OPTION_DATA, PROBE_TARGET_DATA, midCookAllowed, currentOption, isToast, probeHasDoneness, fmtTime } from '../machine.js'
 import { ProbeButtonSvg, FunctionButtonSvg, PresetButtonSvg, RackLevelSvg } from './ButtonSvgs.jsx'
 
 import panelTexture from '../assets/panel/panel-texture.png'
@@ -45,22 +45,23 @@ const FUNCTION_PRESET_DIVIDER = [280, 53, 1.77, 23.81]
 
 const FUNCTION_WORDS = [
   { word: 'Air Fry', b: [190.32, 13.82, 43, 11] },
-  { word: 'Bagel', b: [234.32, 13.82, 43, 11] },
-  { word: 'Toast', b: [278.32, 13.82, 43, 11] },
-  { word: 'Bake', b: [322.32, 13.82, 43, 11] },
+  { word: 'Bake', b: [234.32, 13.82, 43, 11] },
+  { word: 'Roast', b: [278.32, 13.82, 43, 11] },
+  { word: 'Pizza', b: [322.32, 13.82, 43, 11] },
   { word: 'Broil', b: [190.32, 102.82, 43, 11] },
   { word: 'Slow Cook', b: [234.32, 102.82, 43, 11] },
   { word: 'Warm', b: [278.32, 102.82, 43, 11] },
   { word: 'Dehydrate', b: [322.32, 102.82, 43, 11] },
 ]
 const PRESET_WORDS = [
-  { word: 'Pizza', b: [190.32, 26.82, 43, 11] },
-  { word: 'Fries', b: [234.32, 26.82, 43, 11] },
-  { word: 'Veggies', b: [278.32, 26.82, 43, 11] },
-  { word: 'Snacks', b: [322.32, 26.82, 43, 11] },
-  { word: 'Nuggets', b: [190.32, 89.82, 43, 11] },
-  { word: 'Wings', b: [234.32, 89.82, 43, 11] },
+  { word: 'Toast', b: [190.32, 26.82, 43, 11] },
+  { word: 'Bagel', b: [234.32, 26.82, 43, 11] },
+  { word: 'Fries', b: [278.32, 26.82, 43, 11] },
+  { word: 'Wings', b: [322.32, 26.82, 43, 11] },
+  { word: 'Snacks', b: [190.32, 89.82, 43, 11] },
+  { word: 'Nuggets', b: [234.32, 89.82, 43, 11] },
   { word: 'Cookies', b: [278.32, 89.82, 43, 11] },
+  { word: 'Veggies', b: [322.32, 89.82, 43, 11] },
 ]
 
 const RACK_LEVEL_DUAL_LABEL = [385.32, 26, 33, 11]
@@ -164,16 +165,18 @@ export default function Panel({ S, C, send }) {
   const indicatorColor = (cat) => (on && C.mode === cat) ? (cat === 'probe' ? ORANGE : '#fff') : GRAY_IND
   const indicatorBlink = (cat) => on && C.mode === cat && C.focus === 'mode'
 
+  const probeDoneness = probeHasDoneness(C)
+
   let value1Label = 'Temp'
-  if (C.mode === 'probe') value1Label = 'Doneness'
+  if (C.mode === 'probe') value1Label = probeDoneness ? 'Doneness' : 'Temp'
   else if (toast) value1Label = 'Slices'
 
   // Before the option is confirmed, preview the phony default for whatever's
   // currently highlighted (matches how doneness/rack-level already behave)
   // instead of showing a stale/blank value until confirm.
   let disp3 = ''
-  if (C.mode === 'probe') disp3 = String(DONENESS[C.doneness].temp)
-  else if (toast) disp3 = TOAST_SLICE_BANDS[C.slices]
+  if (C.mode === 'probe') disp3 = probeDoneness ? String(DONENESS[C.doneness].temp) : String(C.modeConfirmed ? C.temp : (PROBE_TARGET_DATA[opt]?.temp ?? C.temp))
+  else if (toast) disp3 = String(C.slices)
   else if (C.mode) disp3 = String(C.modeConfirmed ? C.temp : (OPTION_DATA[opt]?.temp ?? C.temp))
   else if (C.manual) disp3 = String(C.temp)
 
@@ -206,7 +209,7 @@ export default function Panel({ S, C, send }) {
         <img className="tc-static tc-hit" style={box(...DUAL_LEVEL_ICON)} src={dualLevelIcon} alt="" draggable={false}
           onClick={() => idle && C.mode && send('DUAL_LEVEL_TOGGLE')} />
         <span className="tc-caption" style={box(...DUAL_LEVEL_CAPTION)}>Dual<br />Level</span>
-        <img className="tc-static tc-hit" style={{ ...box(...DIAL_BOX), borderRadius: '50%' }} src={dialImg} alt="" draggable={false} onClick={() => canPress && C.focus && send('DIAL_CLICK')} />
+        <img className="tc-static" style={{ ...box(...DIAL_BOX), borderRadius: '50%' }} src={dialImg} alt="" draggable={false} />
 
         {/* ---- power ---- */}
         <img className="tc-static tc-hit" style={box(...POWER_ICON_BOX)} src={powerIcon} alt="" draggable={false} onClick={() => send('POWER')} />
@@ -262,7 +265,7 @@ export default function Panel({ S, C, send }) {
         {/* ---- doneness readout (backlit, probe only) ---- */}
         {/* while cooking, only the chosen level stays lit — the rest fully disappear instead of just dimming */}
         {DONENESS_WORDS.map(({ word, b }, i) => (
-          <span key={word} className="tc-glow tc-word" style={{ ...box(...b), opacity: on && probeMode ? (C.doneness === i ? 1 : (S === 'running' ? 0 : 0.5)) : 0 }}>{word}</span>
+          <span key={word} className="tc-glow tc-word" style={{ ...box(...b), opacity: on && probeMode && probeDoneness ? (C.doneness === i ? 1 : (S === 'running' ? 0 : 0.5)) : 0 }}>{word}</span>
         ))}
         <span className="tc-glow tc-white-caption" style={{ ...box(...CAPTION_SLICES), opacity: on && toast ? 1 : 0 }}>Slices</span>
         <span className="tc-glow tc-white-caption" style={{ ...box(...CAPTION_TARGET_TEMP), opacity: on && probeMode ? 1 : 0 }}>Target Temp</span>
